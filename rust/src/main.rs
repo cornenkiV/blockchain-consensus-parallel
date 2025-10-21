@@ -1,4 +1,5 @@
 mod blockchain;
+mod pos;
 mod pow_parallel;
 mod pow_sequential;
 mod utils;
@@ -8,17 +9,20 @@ use std::error::Error;
 use std::process;
 
 #[derive(Debug, Clone, ValueEnum)]
-enum MiningMode {
-    Sequential,
-    Parallel,
+enum ConsensusMode {
+    PowSequential,
+    PowParallel,
+    Pos,
 }
 
 #[derive(Parser, Debug)]
+#[command(name = "blockchain-consensus")]
+#[command(about = "Blockchain consensus PoW and PoS")]
 struct Args {
-    #[arg(short, long, value_enum, default_value = "sequential")]
-    mode: MiningMode,
+    #[arg(short, long, value_enum, default_value = "pow-sequential")]
+    mode: ConsensusMode,
 
-    #[arg(short, long, default_value = "4")]
+    #[arg(short, long, default_value = "8")]
     workers: usize,
 
     #[arg(short, long, default_value = "4")]
@@ -52,8 +56,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("Configuration:");
     println!("  Mode: {:?}", args.mode);
     match args.mode {
-        MiningMode::Parallel => println!("  Workers: {}", args.workers),
-        MiningMode::Sequential => {}
+        ConsensusMode::PowParallel => println!("  Workers: {}", args.workers),
+        ConsensusMode::Pos => println!("  Validators: {}", args.workers),
+        ConsensusMode::PowSequential => {}
     }
     println!(
         "  Difficulty: {} (target: {}...)",
@@ -65,10 +70,10 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!();
 
     let result = match args.mode {
-        MiningMode::Sequential => {
+        ConsensusMode::PowSequential => {
             pow_sequential::run_sequential_mining(args.blocks, args.difficulty, args.transactions)
         }
-        MiningMode::Parallel => {
+        ConsensusMode::PowParallel => {
             if args.workers < 1 {
                 return Err("Number of workers must be at least 1".into());
             }
@@ -78,6 +83,12 @@ fn run() -> Result<(), Box<dyn Error>> {
                 args.workers,
                 args.transactions,
             )
+        }
+        ConsensusMode::Pos => {
+            if args.workers < 2 {
+                return Err("PoS requires at least 2 validators".into());
+            }
+            pos::run_pos_consensus(args.workers, args.blocks, args.transactions)
         }
     };
 

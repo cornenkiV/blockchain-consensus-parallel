@@ -12,6 +12,7 @@ rayon = "1.10"
 clap = { version = "4.5", features = ["derive"] }
 chrono = "0.4"
 parking_lot = "0.12"
+rand = "0.8"
 
 [[bin]]
 name = "blockchain-pow"
