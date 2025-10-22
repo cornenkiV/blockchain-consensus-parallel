@@ -1,0 +1,7 @@
+.zed
+__pycache__/
+
+rust/target/
+rust/Cargo.lock
+visualizer/target/
+visualizer/Cargo.lock

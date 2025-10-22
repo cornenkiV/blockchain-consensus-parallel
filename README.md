@@ -16,7 +16,7 @@ PoW consensus zahteva pronalaženje nonce vrednosti koja, kada se hešuje zajedn
 ### 1.2. Python implementacija
 
 *   **Sekvencijalna verzija:** Mining proces koji sekvencijalno testira nonce vrednosti redom dok se ne pronađe validna vrednost. Implementacija uključuje kreiranje blockchain strukture sa genesis blokom i linkovanjem blokova preko `previous hash` polja.
-*   **Paralelizovana verzija:** Pool mining arhitektura gde višestruki worker procesi testiraju različite opsege nonce vrednosti simultano. Implementacija load balancing mehanizma koji omogućava workerima da preuzimaju nove chunk-ove posla kada završe sa dodeljenim opsegom, kako bi se izbeglo idle vreme.
+*   **Paralelizovana verzija:** Pool mining arhitektura gde višestruki worker procesi (koristeći `multiprocessing` biblioteku) testiraju različite opsege nonce vrednosti simultano. Implementacija load balancing mehanizma koji omogućava workerima da preuzimaju nove chunk-ove posla kada završe sa dodeljenim opsegom, kako bi se izbeglo idle vreme.
 
 **Izlazni podaci:**
 
@@ -26,8 +26,8 @@ PoW consensus zahteva pronalaženje nonce vrednosti koja, kada se hešuje zajedn
 
 ### 1.3. Rust implementacija
 
-*   **Sekvencijalna verzija:** Optimizovana implementacija fokusirana na memory efficiency i brzinu hash kalkulacija.
-*   **Paralelizovana verzija:** Thread-based paralelizacija sa automatskim mehanizmom za distribuciju posla. Implementacija thread-safe koordinacije kroz atomske operacije za praćenje globalnog stanja i channel-based komunikacije za razmenu rezultata.
+*   **Sekvencijalna verzija:** Optimizovana implementacija (koristeći `sha2` biblioteku za hesiranje) fokusirana na memory efficiency i brzinu hash kalkulacija.
+*   **Paralelizovana verzija:** Thread-based paralelizacija (koristeći `rayon` biblioteku) sa automatskim mehanizmom za distribuciju posla. Implementacija thread-safe koordinacije kroz atomske operacije za praćenje globalnog stanja i channel-based komunikacije za razmenu rezultata.
 
 **Izlazni podaci:**
 
@@ -61,7 +61,7 @@ PoW consensus zahteva pronalaženje nonce vrednosti koja, kada se hešuje zajedn
 
 ### 1.5. Vizualizacija
 
-Rust aplikacija koja učitava generisane podatke i kreira grafike pomoću biblioteke za plotting.
+Rust aplikacija koja učitava generisane podatke i kreira grafike pomoću biblioteke za plotting (`plotters`).
 
 **Grafici:**
 
@@ -80,7 +80,7 @@ PoS consensus ne zahteva compute-intensive mining, već koristi stake-based odab
 
 ### 2.2. Rust implementacija
 
-*   **Multi-validator arhitektura:** Kreiranje više thread-ova koji predstavljaju nezavisne validatore, svaki sa određenim ulogom (stake). Validatori konkurentno validiraju isti blok, pri čemu svaki validator nezavisno verifikuje transakcije. Thread-safe koordinacija se postiže kroz atomske operacije za praćenje globalnog stanja validacije i channel-based komunikaciju za razmenu rezultata.
+*   **Multi-validator arhitektura:** Kreiranje više thread-ova (koristeći `rayon`) koji predstavljaju nezavisne validatore, svaki sa određenim ulogom (stake). Validatori konkurentno validiraju isti blok, pri čemu svaki validator nezavisno verifikuje transakcije. Thread-safe koordinacija se postiže kroz atomske operacije za praćenje globalnog stanja validacije i channel-based komunikaciju za razmenu rezultata.
 
 *   **Konkurentna validacija blokova:** Validatori paralelno izvršavaju proces validacije bloka. Prvi validator koji uspešno završi celokupnu validaciju objavljuje blok i signalizira ostalim validatorima da prekinu validaciju.
 

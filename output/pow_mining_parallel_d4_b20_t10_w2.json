@@ -1,0 +1,202 @@
+[
+  {
+    "block_number": 1,
+    "nonce": 27651,
+    "nonces_tested": 33826,
+    "time_seconds": 0.643195629119873,
+    "cumulative_time": 0.643195629119873,
+    "hash_rate": 52590.53150949789,
+    "hash": "000061ceb30a147f69d6adf2f5184d4531497ddbcbeb7a2a2843024884e7bd4b",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 2,
+    "nonce": 34555,
+    "nonces_tested": 37278,
+    "time_seconds": 0.6089630126953125,
+    "cumulative_time": 1.2521586418151855,
+    "hash_rate": 61215.54055476208,
+    "hash": "000082b80d5a37808bc852ec9618c33b12cfa6378ad48e27301ed61dd5db33a3",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 3,
+    "nonce": 26592,
+    "nonces_tested": 33297,
+    "time_seconds": 0.5994100570678711,
+    "cumulative_time": 1.8515686988830566,
+    "hash_rate": 55549.618508035455,
+    "hash": "00002bdb6549f65b6cd66c4c151d5473dba06522b3ccf9e75754d8980ca64072",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 4,
+    "nonce": 85683,
+    "nonces_tested": 92842,
+    "time_seconds": 1.355405569076538,
+    "cumulative_time": 3.2069742679595947,
+    "hash_rate": 68497.5789669028,
+    "hash": "000033601076430dac0573d22e3c8feb17982a72ea9dc68ca18ec34d99350404",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 5,
+    "nonce": 104330,
+    "nonces_tested": 112166,
+    "time_seconds": 1.5883493423461914,
+    "cumulative_time": 4.795323610305786,
+    "hash_rate": 70617.9660919661,
+    "hash": "00005b08e7610a8461d5d0737677ea90f827fc715b9849f055677c8abb014773",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 6,
+    "nonce": 17851,
+    "nonces_tested": 18926,
+    "time_seconds": 0.34070634841918945,
+    "cumulative_time": 5.136029958724976,
+    "hash_rate": 55549.30246475572,
+    "hash": "00004d48819d46fd0a9ddc2d6f795ff88a9a7e8d677c89bafff8d7e553aa19bc",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 7,
+    "nonce": 20488,
+    "nonces_tested": 24711,
+    "time_seconds": 0.45864391326904297,
+    "cumulative_time": 5.5946738719940186,
+    "hash_rate": 53878.3995275751,
+    "hash": "0000bc49ccf1751511697d19042a6142c064d38ab2a5a3b644e8179d04b1cd94",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 8,
+    "nonce": 64479,
+    "nonces_tested": 72240,
+    "time_seconds": 1.11100172996521,
+    "cumulative_time": 6.7056756019592285,
+    "hash_rate": 65022.401002257786,
+    "hash": "000069400526b09affc53fb9567ded6496e5129df368b122ce9a396d2c7916bc",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 9,
+    "nonce": 55814,
+    "nonces_tested": 57908,
+    "time_seconds": 0.8624920845031738,
+    "cumulative_time": 7.568167686462402,
+    "hash_rate": 67140.32631772739,
+    "hash": "0000366d62499853f63ccc08acd7dbd098b576b704e7f086b273c56c0b4b2094",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 10,
+    "nonce": 52941,
+    "nonces_tested": 56471,
+    "time_seconds": 0.8880622386932373,
+    "cumulative_time": 8.45622992515564,
+    "hash_rate": 63589.01160249281,
+    "hash": "000077370642e9c289a6bc1604c9ba836d12fb90a38155a5aece79412f6f2f93",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 11,
+    "nonce": 15477,
+    "nonces_tested": 17739,
+    "time_seconds": 0.36100220680236816,
+    "cumulative_time": 8.817232131958008,
+    "hash_rate": 49138.20377200983,
+    "hash": "00005b54fb8ed22121a81d12474423d746876c3729b795b4e783705c95d8f282",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 12,
+    "nonce": 45603,
+    "nonces_tested": 52802,
+    "time_seconds": 0.8840186595916748,
+    "cumulative_time": 9.701250791549683,
+    "hash_rate": 59729.50845221872,
+    "hash": "00000f47c11386f58800eb4ec30bd118757f7f2171ba1b753dbbd9b2b27869a3",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 13,
+    "nonce": 5304,
+    "nonces_tested": 12653,
+    "time_seconds": 0.366957426071167,
+    "cumulative_time": 10.06820821762085,
+    "hash_rate": 34480.83919562402,
+    "hash": "0000f68113d839845ec499cd763e6bd364bb942d5e24edce36417898f8f7adb0",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 14,
+    "nonce": 77358,
+    "nonces_tested": 78680,
+    "time_seconds": 1.2070553302764893,
+    "cumulative_time": 11.275263547897339,
+    "hash_rate": 65183.42450961008,
+    "hash": "0000f00e3d17c340726a02be5d1e91161533a714001d2da7d5dcda2e4b3a8e70",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 15,
+    "nonce": 150154,
+    "nonces_tested": 155078,
+    "time_seconds": 2.247377872467041,
+    "cumulative_time": 13.52264142036438,
+    "hash_rate": 69003.97209560685,
+    "hash": "0000c73c8e90b92a0ab0bc1a92dcd1e874c7c9676dc9cca68c1a56d39a7f16f3",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 16,
+    "nonce": 117842,
+    "nonces_tested": 118922,
+    "time_seconds": 1.6100080013275146,
+    "cumulative_time": 15.132649421691895,
+    "hash_rate": 73864.22918516191,
+    "hash": "0000012e75e702ab3841f8a83f3007126c1207077d0385af3f2a1a615529ab3a",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 17,
+    "nonce": 228322,
+    "nonces_tested": 234162,
+    "time_seconds": 3.1367039680480957,
+    "cumulative_time": 18.26935338973999,
+    "hash_rate": 74652.2471949159,
+    "hash": "0000b39c04e070c1c93f0c872c0143f7cc4e98c811888dd280cfc1dc05efdba8",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 18,
+    "nonce": 24737,
+    "nonces_tested": 32369,
+    "time_seconds": 0.6339035034179688,
+    "cumulative_time": 18.90325689315796,
+    "hash_rate": 51062.97697594088,
+    "hash": "0000264f08b097832cb6829b69fd9f26d334209ec3610dae84f6488484e5384a",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 19,
+    "nonce": 473,
+    "nonces_tested": 10237,
+    "time_seconds": 0.3528435230255127,
+    "cumulative_time": 19.25610041618347,
+    "hash_rate": 29012.860749777185,
+    "hash": "000090c23976d681d0e361ff5ab27d8efdff837ddb5381a602c2ec8aa239a6cb",
+    "num_transactions": 10
+  },
+  {
+    "block_number": 20,
+    "nonce": 3430,
+    "nonces_tested": 11716,
+    "time_seconds": 0.3555724620819092,
+    "cumulative_time": 19.61167287826538,
+    "hash_rate": 32949.683255564145,
+    "hash": "0000ade1ad63b536528981cb49e46529684ebd84ebd3a7a27b7ee2888ca2ddba",
+    "num_transactions": 10
+  }
+]

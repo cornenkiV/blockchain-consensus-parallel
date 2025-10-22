@@ -1,0 +1,13 @@
+[package]
+name = "visualizer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+plotters = "0.3.5"
+csv = "1.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+glob = "0.3.1"
+gif = "0.13"
+image = "0.25"
