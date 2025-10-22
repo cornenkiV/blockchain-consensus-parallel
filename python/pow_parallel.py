@@ -11,6 +11,8 @@ from utils import (
     format_time,
     get_config_suffix,
 )
+import os
+import csv
 
 
 def worker_mine(
@@ -177,7 +179,7 @@ def mine_blockchain_parallel(difficulty, num_blocks, num_workers, txs_per_block)
                 "block_number": block_num,
                 "nonce": block.nonce,
                 "nonces_tested": nonces_tested,
-                "elapsed_time": elapsed_time,
+                "time_seconds": elapsed_time,
                 "cumulative_time": total_time + elapsed_time,
                 "hash_rate": hash_rate,
                 "hash": block.hash,
@@ -219,10 +221,18 @@ def mine_blockchain_parallel(difficulty, num_blocks, num_workers, txs_per_block)
 
     print_mining_summary(total_time, total_nonces_tested, num_blocks)
 
+    final_performance = {
+        "total_blocks": num_blocks,
+        "difficulty": difficulty,
+        "total_time_seconds": total_time,
+        "total_nonces_tested": total_nonces_tested,
+        "hash_rate": total_nonces_tested / total_time if total_time > 0 else 0,
+    }
+
     return {
         "blockchain": blockchain,
         "progress": progress_data,
-        "performance": performance_metrics,
+        "performance": final_performance,
         "load_balancing": load_balancing_stats,
         "summary": {
             "total_time": total_time,
@@ -239,10 +249,31 @@ def mine_blockchain_parallel(difficulty, num_blocks, num_workers, txs_per_block)
     }
 
 
+def save_csv(data, filename):
+    output_dir = "output"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    filepath = os.path.join(output_dir, filename)
+
+    if isinstance(data, dict):
+        with open(filepath, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=data.keys())
+            writer.writeheader()
+            writer.writerow(data)
+    else:
+        if not data:
+            return
+        with open(filepath, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
+
+
 def save_results(results, difficulty, num_blocks, num_workers, txs_per_block):
     config = get_config_suffix(difficulty, num_blocks, txs_per_block, num_workers)
     save_json(
-        {"metadata": results["summary"], "blocks": results["progress"]},
+        results["progress"],
         f"pow_mining_parallel_{config}.json",
     )
     save_json(results["blockchain"].to_dict(), f"pow_blockchain_parallel_{config}.json")

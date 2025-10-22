@@ -1,0 +1,1122 @@
+[
+  {
+    "validator_id": 0,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4981999999999998,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3727,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.503,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.7264,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4625,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3991,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 1,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.3667,
+    "success": true
+  },
+  {
+    "validator_id": 7,
+    "block_index": 1,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5297,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3398999999999996,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 2,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.2181,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4526,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5879000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2232,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2642,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4104,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 2,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.529,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.8724000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 3,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.3538,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.609,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6898,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5512,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.9552,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4566000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 3,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5027999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3381000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1936,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2577000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.0601,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1425,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1196,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 4,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.0215,
+    "success": true
+  },
+  {
+    "validator_id": 7,
+    "block_index": 4,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5252,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4776,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3292,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4225000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2668,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3851,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2954999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 5,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.1654999999999998,
+    "success": true
+  },
+  {
+    "validator_id": 7,
+    "block_index": 5,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3461,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4104,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 6,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.2103,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6868,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2639,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3809,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6489000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3964,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 6,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4118999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.8041,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 7,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.2393,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4344,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2401,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3979,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5810999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.7135000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 7,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5311,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3749000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1805000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3538,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5127,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2788,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2781,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 8,
+    "transactions_validated": 5,
+    "validation_time_ms": 1.9175,
+    "success": true
+  },
+  {
+    "validator_id": 7,
+    "block_index": 8,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3546,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6332999999999998,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 9,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.269,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3057,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.7398000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.7152000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.7641,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.371,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 9,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6204,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1565999999999996,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 10,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.0446,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2904,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3145000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1307,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2804,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2046,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 10,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3327,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2368,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.0696,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1525,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4068,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2639,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4475000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 11,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.415,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 11,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.0661,
+    "success": true
+  },
+  {
+    "validator_id": 0,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3287,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 12,
+    "transactions_validated": 5,
+    "validation_time_ms": 1.9754,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2483999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.153,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2519,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1013,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.0225999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 12,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1447,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5422000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3752999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2666,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3332,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 13,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.2527,
+    "success": true
+  },
+  {
+    "validator_id": 5,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.839,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6670000000000003,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 13,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5707999999999998,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1812,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 14,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.0525,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4301,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3699,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2843,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1959000000000004,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1747,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 14,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2889,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4682,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3263,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2969,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3624,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6135,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.5625999999999998,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 15,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.2034,
+    "success": true
+  },
+  {
+    "validator_id": 7,
+    "block_index": 15,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3567,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4019000000000004,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 16,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.032,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.054,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1798,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2188,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4502,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2687,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 16,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3264,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3457,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 17,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.1229999999999998,
+    "success": true
+  },
+  {
+    "validator_id": 2,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2506000000000004,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1535,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2159,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3881,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3728,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 17,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4208,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.4221999999999997,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.417,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3207,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3692,
+    "success": false
+  },
+  {
+    "validator_id": 4,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2575999999999996,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.6663,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 18,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.1597,
+    "success": true
+  },
+  {
+    "validator_id": 7,
+    "block_index": 18,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.31,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2563,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.0358,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.2087,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 19,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.0249,
+    "success": true
+  },
+  {
+    "validator_id": 4,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3291000000000004,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1704,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1375,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 19,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1643,
+    "success": false
+  },
+  {
+    "validator_id": 0,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1928,
+    "success": false
+  },
+  {
+    "validator_id": 1,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.3908,
+    "success": false
+  },
+  {
+    "validator_id": 2,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1854999999999998,
+    "success": false
+  },
+  {
+    "validator_id": 3,
+    "block_index": 20,
+    "transactions_validated": 5,
+    "validation_time_ms": 2.0769,
+    "success": true
+  },
+  {
+    "validator_id": 4,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1365,
+    "success": false
+  },
+  {
+    "validator_id": 5,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1653000000000002,
+    "success": false
+  },
+  {
+    "validator_id": 6,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1928,
+    "success": false
+  },
+  {
+    "validator_id": 7,
+    "block_index": 20,
+    "transactions_validated": 0,
+    "validation_time_ms": 2.1271,
+    "success": false
+  }
+]

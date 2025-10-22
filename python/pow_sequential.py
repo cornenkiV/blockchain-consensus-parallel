@@ -10,6 +10,8 @@ from utils import (
     format_time,
     get_config_suffix,
 )
+import os
+import csv
 
 
 def mine_blockchain_sequential(
@@ -86,7 +88,7 @@ def mine_blockchain_sequential(
                 "block_number": block_num,
                 "nonce": block.nonce,
                 "nonces_tested": nonces_tested,
-                "elapsed_time": elapsed_time,
+                "time_seconds": elapsed_time,
                 "cumulative_time": total_time + elapsed_time,
                 "hash_rate": hash_rate,
                 "hash": block.hash,
@@ -111,10 +113,18 @@ def mine_blockchain_sequential(
 
     print_mining_summary(total_time, total_nonces_tested, num_blocks)
 
+    final_performance = {
+        "total_blocks": num_blocks,
+        "difficulty": difficulty,
+        "total_time_seconds": total_time,
+        "total_nonces_tested": total_nonces_tested,
+        "hash_rate": total_nonces_tested / total_time if total_time > 0 else 0,
+    }
+
     return {
         "blockchain": blockchain,
         "progress": progress_data,
-        "performance": performance_metrics,
+        "performance": final_performance,
         "summary": {
             "total_time": total_time,
             "total_nonces_tested": total_nonces_tested,
@@ -127,6 +137,27 @@ def mine_blockchain_sequential(
             "txs_per_block": txs_per_block,
         },
     }
+
+
+def save_csv(data, filename):
+    output_dir = "output"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    filepath = os.path.join(output_dir, filename)
+
+    if isinstance(data, dict):
+        with open(filepath, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=data.keys())
+            writer.writeheader()
+            writer.writerow(data)
+    else:
+        if not data:
+            return
+        with open(filepath, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
 
 
 def save_results(results: dict, difficulty: int, num_blocks: int, txs_per_block: int):
@@ -144,7 +175,7 @@ def save_results(results: dict, difficulty: int, num_blocks: int, txs_per_block:
         },
         "blocks": results["progress"],
     }
-    save_json(progress_output, f"pow_mining_sequential_{config}.json")
+    save_json(results["progress"], f"pow_mining_sequential_{config}.json")
 
     blockchain_output = results["blockchain"].to_dict()
     save_json(blockchain_output, f"pow_blockchain_sequential_{config}.json")

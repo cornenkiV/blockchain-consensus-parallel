@@ -8,10 +8,10 @@ use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MiningProgress {
-    pub block_index: usize,
+    pub block_number: usize,
     pub nonce: u64,
     pub hash: String,
-    pub attempts: u64,
+    pub nonces_tested: u64,
     pub time_seconds: f64,
 }
 
@@ -20,9 +20,9 @@ pub struct PerformanceMetrics {
     pub total_blocks: usize,
     pub difficulty: usize,
     pub total_time_seconds: f64,
-    pub total_attempts: u64,
+    pub total_nonces_tested: u64,
     pub hash_rate: f64,
-    pub avg_time_per_block: f64,
+    //pub avg_time_per_block: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -93,18 +93,18 @@ pub fn save_performance_csv(
         "total_blocks",
         "difficulty",
         "total_time_seconds",
-        "total_attempts",
+        "total_nonces_tested",
         "hash_rate",
-        "avg_time_per_block",
+        //"avg_time_per_block",
     ])?;
 
     writer.write_record(&[
         metrics.total_blocks.to_string(),
         metrics.difficulty.to_string(),
         format!("{:.6}", metrics.total_time_seconds),
-        metrics.total_attempts.to_string(),
+        metrics.total_nonces_tested.to_string(),
         format!("{:.2}", metrics.hash_rate),
-        format!("{:.6}", metrics.avg_time_per_block),
+        //format!("{:.6}", metrics.avg_time_per_block),
     ])?;
 
     writer.flush()?;

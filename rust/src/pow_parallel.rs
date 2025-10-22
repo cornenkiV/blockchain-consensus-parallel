@@ -133,10 +133,10 @@ pub fn run_parallel_mining(
         total_attempts += attempts;
 
         let progress = MiningProgress {
-            block_index: i,
+            block_number: i,
             nonce: block.nonce,
             hash: block.hash.clone(),
-            attempts,
+            nonces_tested: attempts,
             time_seconds: block_time,
         };
         mining_progress.push(progress);
@@ -219,9 +219,9 @@ pub fn run_parallel_mining(
         total_blocks: num_blocks,
         difficulty,
         total_time_seconds: total_time,
-        total_attempts,
+        total_nonces_tested: total_attempts,
         hash_rate,
-        avg_time_per_block,
+        //avg_time_per_block,
     };
     save_performance_csv(&metrics, &performance_filename)?;
 

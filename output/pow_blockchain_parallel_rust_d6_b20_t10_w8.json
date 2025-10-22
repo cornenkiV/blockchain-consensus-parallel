@@ -1,0 +1,152 @@
+{
+  "chain": [
+    {
+      "previous_hash": "0",
+      "timestamp": 1761144361,
+      "nonce": 0,
+      "data": "Genesis Block",
+      "hash": "05e8d2d0fc78877a7ff4e032f2e628cbe3a4c333e8855823d85eb25c7553473f"
+    },
+    {
+      "previous_hash": "05e8d2d0fc78877a7ff4e032f2e628cbe3a4c333e8855823d85eb25c7553473f",
+      "timestamp": 1761144361,
+      "nonce": 5284141,
+      "data": "Block 1 with 10 transactions: TX1-0: Alice -> Bob: 0.1 BTC, TX1-1: Alice -> Bob: 0.2 BTC, TX1-2: Alice -> Bob: 0.30000000000000004 BTC, TX1-3: Alice -> Bob: 0.4 BTC, TX1-4: Alice -> Bob: 0.5 BTC, TX1-5: Alice -> Bob: 0.6000000000000001 BTC, TX1-6: Alice -> Bob: 0.7000000000000001 BTC, TX1-7: Alice -> Bob: 0.8 BTC, TX1-8: Alice -> Bob: 0.9 BTC, TX1-9: Alice -> Bob: 1 BTC",
+      "hash": "0000004e8aa07c7bbe6650fea745382903b4d2b7e746406c5ab12dab7eef3c00"
+    },
+    {
+      "previous_hash": "0000004e8aa07c7bbe6650fea745382903b4d2b7e746406c5ab12dab7eef3c00",
+      "timestamp": 1761144363,
+      "nonce": 12079450,
+      "data": "Block 2 with 10 transactions: TX2-0: Alice -> Bob: 0.1 BTC, TX2-1: Alice -> Bob: 0.2 BTC, TX2-2: Alice -> Bob: 0.30000000000000004 BTC, TX2-3: Alice -> Bob: 0.4 BTC, TX2-4: Alice -> Bob: 0.5 BTC, TX2-5: Alice -> Bob: 0.6000000000000001 BTC, TX2-6: Alice -> Bob: 0.7000000000000001 BTC, TX2-7: Alice -> Bob: 0.8 BTC, TX2-8: Alice -> Bob: 0.9 BTC, TX2-9: Alice -> Bob: 1 BTC",
+      "hash": "000000443bb79d8eaadc77e5ab99d1d66ebaf986d7296e01965384344afb16b9"
+    },
+    {
+      "previous_hash": "000000443bb79d8eaadc77e5ab99d1d66ebaf986d7296e01965384344afb16b9",
+      "timestamp": 1761144365,
+      "nonce": 23721093,
+      "data": "Block 3 with 10 transactions: TX3-0: Alice -> Bob: 0.1 BTC, TX3-1: Alice -> Bob: 0.2 BTC, TX3-2: Alice -> Bob: 0.30000000000000004 BTC, TX3-3: Alice -> Bob: 0.4 BTC, TX3-4: Alice -> Bob: 0.5 BTC, TX3-5: Alice -> Bob: 0.6000000000000001 BTC, TX3-6: Alice -> Bob: 0.7000000000000001 BTC, TX3-7: Alice -> Bob: 0.8 BTC, TX3-8: Alice -> Bob: 0.9 BTC, TX3-9: Alice -> Bob: 1 BTC",
+      "hash": "000000c358192806033ce7e35b1dd58391b9330c811695d683eee1b555e80176"
+    },
+    {
+      "previous_hash": "000000c358192806033ce7e35b1dd58391b9330c811695d683eee1b555e80176",
+      "timestamp": 1761144371,
+      "nonce": 13036638,
+      "data": "Block 4 with 10 transactions: TX4-0: Alice -> Bob: 0.1 BTC, TX4-1: Alice -> Bob: 0.2 BTC, TX4-2: Alice -> Bob: 0.30000000000000004 BTC, TX4-3: Alice -> Bob: 0.4 BTC, TX4-4: Alice -> Bob: 0.5 BTC, TX4-5: Alice -> Bob: 0.6000000000000001 BTC, TX4-6: Alice -> Bob: 0.7000000000000001 BTC, TX4-7: Alice -> Bob: 0.8 BTC, TX4-8: Alice -> Bob: 0.9 BTC, TX4-9: Alice -> Bob: 1 BTC",
+      "hash": "00000062f2aea8ff2a711f59f0153d1264ab7f6870d10b0c9a434ccf29d0d5ac"
+    },
+    {
+      "previous_hash": "00000062f2aea8ff2a711f59f0153d1264ab7f6870d10b0c9a434ccf29d0d5ac",
+      "timestamp": 1761144373,
+      "nonce": 31383269,
+      "data": "Block 5 with 10 transactions: TX5-0: Alice -> Bob: 0.1 BTC, TX5-1: Alice -> Bob: 0.2 BTC, TX5-2: Alice -> Bob: 0.30000000000000004 BTC, TX5-3: Alice -> Bob: 0.4 BTC, TX5-4: Alice -> Bob: 0.5 BTC, TX5-5: Alice -> Bob: 0.6000000000000001 BTC, TX5-6: Alice -> Bob: 0.7000000000000001 BTC, TX5-7: Alice -> Bob: 0.8 BTC, TX5-8: Alice -> Bob: 0.9 BTC, TX5-9: Alice -> Bob: 1 BTC",
+      "hash": "000000c5dfdd909bedd0aec9d7f870b4442fdf66482bd2ab1bdc85e5b03cb01d"
+    },
+    {
+      "previous_hash": "000000c5dfdd909bedd0aec9d7f870b4442fdf66482bd2ab1bdc85e5b03cb01d",
+      "timestamp": 1761144380,
+      "nonce": 14183376,
+      "data": "Block 6 with 10 transactions: TX6-0: Alice -> Bob: 0.1 BTC, TX6-1: Alice -> Bob: 0.2 BTC, TX6-2: Alice -> Bob: 0.30000000000000004 BTC, TX6-3: Alice -> Bob: 0.4 BTC, TX6-4: Alice -> Bob: 0.5 BTC, TX6-5: Alice -> Bob: 0.6000000000000001 BTC, TX6-6: Alice -> Bob: 0.7000000000000001 BTC, TX6-7: Alice -> Bob: 0.8 BTC, TX6-8: Alice -> Bob: 0.9 BTC, TX6-9: Alice -> Bob: 1 BTC",
+      "hash": "000000b7fc3a5c32eed27cd2bd7d746611f7a7543e578946f80f2ae44e89e30f"
+    },
+    {
+      "previous_hash": "000000b7fc3a5c32eed27cd2bd7d746611f7a7543e578946f80f2ae44e89e30f",
+      "timestamp": 1761144383,
+      "nonce": 56673761,
+      "data": "Block 7 with 10 transactions: TX7-0: Alice -> Bob: 0.1 BTC, TX7-1: Alice -> Bob: 0.2 BTC, TX7-2: Alice -> Bob: 0.30000000000000004 BTC, TX7-3: Alice -> Bob: 0.4 BTC, TX7-4: Alice -> Bob: 0.5 BTC, TX7-5: Alice -> Bob: 0.6000000000000001 BTC, TX7-6: Alice -> Bob: 0.7000000000000001 BTC, TX7-7: Alice -> Bob: 0.8 BTC, TX7-8: Alice -> Bob: 0.9 BTC, TX7-9: Alice -> Bob: 1 BTC",
+      "hash": "00000068b2574d7aabcabd249d9aa976ab317534b18ee4cb72688e465fa29947"
+    },
+    {
+      "previous_hash": "00000068b2574d7aabcabd249d9aa976ab317534b18ee4cb72688e465fa29947",
+      "timestamp": 1761144396,
+      "nonce": 6928172,
+      "data": "Block 8 with 10 transactions: TX8-0: Alice -> Bob: 0.1 BTC, TX8-1: Alice -> Bob: 0.2 BTC, TX8-2: Alice -> Bob: 0.30000000000000004 BTC, TX8-3: Alice -> Bob: 0.4 BTC, TX8-4: Alice -> Bob: 0.5 BTC, TX8-5: Alice -> Bob: 0.6000000000000001 BTC, TX8-6: Alice -> Bob: 0.7000000000000001 BTC, TX8-7: Alice -> Bob: 0.8 BTC, TX8-8: Alice -> Bob: 0.9 BTC, TX8-9: Alice -> Bob: 1 BTC",
+      "hash": "000000d268b263bd3f3be60b33fe7a45ec15734cc0443aaeb8e5ef352ed6219a"
+    },
+    {
+      "previous_hash": "000000d268b263bd3f3be60b33fe7a45ec15734cc0443aaeb8e5ef352ed6219a",
+      "timestamp": 1761144397,
+      "nonce": 12654894,
+      "data": "Block 9 with 10 transactions: TX9-0: Alice -> Bob: 0.1 BTC, TX9-1: Alice -> Bob: 0.2 BTC, TX9-2: Alice -> Bob: 0.30000000000000004 BTC, TX9-3: Alice -> Bob: 0.4 BTC, TX9-4: Alice -> Bob: 0.5 BTC, TX9-5: Alice -> Bob: 0.6000000000000001 BTC, TX9-6: Alice -> Bob: 0.7000000000000001 BTC, TX9-7: Alice -> Bob: 0.8 BTC, TX9-8: Alice -> Bob: 0.9 BTC, TX9-9: Alice -> Bob: 1 BTC",
+      "hash": "00000048b2beabcb6a407b8d41915bd121c13a340dd8fb1e6435997dd14a489b"
+    },
+    {
+      "previous_hash": "00000048b2beabcb6a407b8d41915bd121c13a340dd8fb1e6435997dd14a489b",
+      "timestamp": 1761144400,
+      "nonce": 5222376,
+      "data": "Block 10 with 10 transactions: TX10-0: Alice -> Bob: 0.1 BTC, TX10-1: Alice -> Bob: 0.2 BTC, TX10-2: Alice -> Bob: 0.30000000000000004 BTC, TX10-3: Alice -> Bob: 0.4 BTC, TX10-4: Alice -> Bob: 0.5 BTC, TX10-5: Alice -> Bob: 0.6000000000000001 BTC, TX10-6: Alice -> Bob: 0.7000000000000001 BTC, TX10-7: Alice -> Bob: 0.8 BTC, TX10-8: Alice -> Bob: 0.9 BTC, TX10-9: Alice -> Bob: 1 BTC",
+      "hash": "00000046f234e81aaf9939d9cede9a9a8698c726e4f06d996374e71f8143b0dd"
+    },
+    {
+      "previous_hash": "00000046f234e81aaf9939d9cede9a9a8698c726e4f06d996374e71f8143b0dd",
+      "timestamp": 1761144401,
+      "nonce": 3518426,
+      "data": "Block 11 with 10 transactions: TX11-0: Alice -> Bob: 0.1 BTC, TX11-1: Alice -> Bob: 0.2 BTC, TX11-2: Alice -> Bob: 0.30000000000000004 BTC, TX11-3: Alice -> Bob: 0.4 BTC, TX11-4: Alice -> Bob: 0.5 BTC, TX11-5: Alice -> Bob: 0.6000000000000001 BTC, TX11-6: Alice -> Bob: 0.7000000000000001 BTC, TX11-7: Alice -> Bob: 0.8 BTC, TX11-8: Alice -> Bob: 0.9 BTC, TX11-9: Alice -> Bob: 1 BTC",
+      "hash": "00000014364cbe7f2a70d2c887645d0853ff00af0732439de2be26065c4acef3"
+    },
+    {
+      "previous_hash": "00000014364cbe7f2a70d2c887645d0853ff00af0732439de2be26065c4acef3",
+      "timestamp": 1761144402,
+      "nonce": 59304365,
+      "data": "Block 12 with 10 transactions: TX12-0: Alice -> Bob: 0.1 BTC, TX12-1: Alice -> Bob: 0.2 BTC, TX12-2: Alice -> Bob: 0.30000000000000004 BTC, TX12-3: Alice -> Bob: 0.4 BTC, TX12-4: Alice -> Bob: 0.5 BTC, TX12-5: Alice -> Bob: 0.6000000000000001 BTC, TX12-6: Alice -> Bob: 0.7000000000000001 BTC, TX12-7: Alice -> Bob: 0.8 BTC, TX12-8: Alice -> Bob: 0.9 BTC, TX12-9: Alice -> Bob: 1 BTC",
+      "hash": "00000028787e1592e373fa401673d18a7be7cb3bace487c10b2bac9692f7d6eb"
+    },
+    {
+      "previous_hash": "00000028787e1592e373fa401673d18a7be7cb3bace487c10b2bac9692f7d6eb",
+      "timestamp": 1761144415,
+      "nonce": 33751751,
+      "data": "Block 13 with 10 transactions: TX13-0: Alice -> Bob: 0.1 BTC, TX13-1: Alice -> Bob: 0.2 BTC, TX13-2: Alice -> Bob: 0.30000000000000004 BTC, TX13-3: Alice -> Bob: 0.4 BTC, TX13-4: Alice -> Bob: 0.5 BTC, TX13-5: Alice -> Bob: 0.6000000000000001 BTC, TX13-6: Alice -> Bob: 0.7000000000000001 BTC, TX13-7: Alice -> Bob: 0.8 BTC, TX13-8: Alice -> Bob: 0.9 BTC, TX13-9: Alice -> Bob: 1 BTC",
+      "hash": "0000009fb46c4890904e1543e7103a274639717186f5d010cb2a376c503a4be8"
+    },
+    {
+      "previous_hash": "0000009fb46c4890904e1543e7103a274639717186f5d010cb2a376c503a4be8",
+      "timestamp": 1761144422,
+      "nonce": 1567689,
+      "data": "Block 14 with 10 transactions: TX14-0: Alice -> Bob: 0.1 BTC, TX14-1: Alice -> Bob: 0.2 BTC, TX14-2: Alice -> Bob: 0.30000000000000004 BTC, TX14-3: Alice -> Bob: 0.4 BTC, TX14-4: Alice -> Bob: 0.5 BTC, TX14-5: Alice -> Bob: 0.6000000000000001 BTC, TX14-6: Alice -> Bob: 0.7000000000000001 BTC, TX14-7: Alice -> Bob: 0.8 BTC, TX14-8: Alice -> Bob: 0.9 BTC, TX14-9: Alice -> Bob: 1 BTC",
+      "hash": "0000001d4775bc02a180cef4c223a63ad77d0aefc9fc7f2f23b4bf913aeb435a"
+    },
+    {
+      "previous_hash": "0000001d4775bc02a180cef4c223a63ad77d0aefc9fc7f2f23b4bf913aeb435a",
+      "timestamp": 1761144423,
+      "nonce": 1028714,
+      "data": "Block 15 with 10 transactions: TX15-0: Alice -> Bob: 0.1 BTC, TX15-1: Alice -> Bob: 0.2 BTC, TX15-2: Alice -> Bob: 0.30000000000000004 BTC, TX15-3: Alice -> Bob: 0.4 BTC, TX15-4: Alice -> Bob: 0.5 BTC, TX15-5: Alice -> Bob: 0.6000000000000001 BTC, TX15-6: Alice -> Bob: 0.7000000000000001 BTC, TX15-7: Alice -> Bob: 0.8 BTC, TX15-8: Alice -> Bob: 0.9 BTC, TX15-9: Alice -> Bob: 1 BTC",
+      "hash": "0000004d56f073236b49e9fda8d38061498db40b8c6621f6e8e012d618c74bde"
+    },
+    {
+      "previous_hash": "0000004d56f073236b49e9fda8d38061498db40b8c6621f6e8e012d618c74bde",
+      "timestamp": 1761144423,
+      "nonce": 339447,
+      "data": "Block 16 with 10 transactions: TX16-0: Alice -> Bob: 0.1 BTC, TX16-1: Alice -> Bob: 0.2 BTC, TX16-2: Alice -> Bob: 0.30000000000000004 BTC, TX16-3: Alice -> Bob: 0.4 BTC, TX16-4: Alice -> Bob: 0.5 BTC, TX16-5: Alice -> Bob: 0.6000000000000001 BTC, TX16-6: Alice -> Bob: 0.7000000000000001 BTC, TX16-7: Alice -> Bob: 0.8 BTC, TX16-8: Alice -> Bob: 0.9 BTC, TX16-9: Alice -> Bob: 1 BTC",
+      "hash": "00000060d41c58b87268cffee5ca48d74035e07748ed6b3b652138e0410870ea"
+    },
+    {
+      "previous_hash": "00000060d41c58b87268cffee5ca48d74035e07748ed6b3b652138e0410870ea",
+      "timestamp": 1761144423,
+      "nonce": 3508457,
+      "data": "Block 17 with 10 transactions: TX17-0: Alice -> Bob: 0.1 BTC, TX17-1: Alice -> Bob: 0.2 BTC, TX17-2: Alice -> Bob: 0.30000000000000004 BTC, TX17-3: Alice -> Bob: 0.4 BTC, TX17-4: Alice -> Bob: 0.5 BTC, TX17-5: Alice -> Bob: 0.6000000000000001 BTC, TX17-6: Alice -> Bob: 0.7000000000000001 BTC, TX17-7: Alice -> Bob: 0.8 BTC, TX17-8: Alice -> Bob: 0.9 BTC, TX17-9: Alice -> Bob: 1 BTC",
+      "hash": "000000582658f474e1abe805638235178c7dc20d16c33a13dca3a88990304f81"
+    },
+    {
+      "previous_hash": "000000582658f474e1abe805638235178c7dc20d16c33a13dca3a88990304f81",
+      "timestamp": 1761144424,
+      "nonce": 20366853,
+      "data": "Block 18 with 10 transactions: TX18-0: Alice -> Bob: 0.1 BTC, TX18-1: Alice -> Bob: 0.2 BTC, TX18-2: Alice -> Bob: 0.30000000000000004 BTC, TX18-3: Alice -> Bob: 0.4 BTC, TX18-4: Alice -> Bob: 0.5 BTC, TX18-5: Alice -> Bob: 0.6000000000000001 BTC, TX18-6: Alice -> Bob: 0.7000000000000001 BTC, TX18-7: Alice -> Bob: 0.8 BTC, TX18-8: Alice -> Bob: 0.9 BTC, TX18-9: Alice -> Bob: 1 BTC",
+      "hash": "0000006b76be91e30ad885bf375edfb15e38a895c5a0dc8616b78b672cfcb678"
+    },
+    {
+      "previous_hash": "0000006b76be91e30ad885bf375edfb15e38a895c5a0dc8616b78b672cfcb678",
+      "timestamp": 1761144428,
+      "nonce": 19574432,
+      "data": "Block 19 with 10 transactions: TX19-0: Alice -> Bob: 0.1 BTC, TX19-1: Alice -> Bob: 0.2 BTC, TX19-2: Alice -> Bob: 0.30000000000000004 BTC, TX19-3: Alice -> Bob: 0.4 BTC, TX19-4: Alice -> Bob: 0.5 BTC, TX19-5: Alice -> Bob: 0.6000000000000001 BTC, TX19-6: Alice -> Bob: 0.7000000000000001 BTC, TX19-7: Alice -> Bob: 0.8 BTC, TX19-8: Alice -> Bob: 0.9 BTC, TX19-9: Alice -> Bob: 1 BTC",
+      "hash": "0000001f14867c63935d68b43d65bb1e2a9b8e0c0f9a349e24e166f75b4642a6"
+    },
+    {
+      "previous_hash": "0000001f14867c63935d68b43d65bb1e2a9b8e0c0f9a349e24e166f75b4642a6",
+      "timestamp": 1761144433,
+      "nonce": 21025509,
+      "data": "Block 20 with 10 transactions: TX20-0: Alice -> Bob: 0.1 BTC, TX20-1: Alice -> Bob: 0.2 BTC, TX20-2: Alice -> Bob: 0.30000000000000004 BTC, TX20-3: Alice -> Bob: 0.4 BTC, TX20-4: Alice -> Bob: 0.5 BTC, TX20-5: Alice -> Bob: 0.6000000000000001 BTC, TX20-6: Alice -> Bob: 0.7000000000000001 BTC, TX20-7: Alice -> Bob: 0.8 BTC, TX20-8: Alice -> Bob: 0.9 BTC, TX20-9: Alice -> Bob: 1 BTC",
+      "hash": "000000a934508a2512e738301ed36fb43e36e7710da29af05460fdc1e824ff7c"
+    }
+  ],
+  "difficulty": 6
+}

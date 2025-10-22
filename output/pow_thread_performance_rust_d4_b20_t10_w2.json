@@ -1,0 +1,242 @@
+[
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 12933,
+    "total_time_seconds": 0.026841
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 13415,
+    "total_time_seconds": 0.0268274
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 50355,
+    "total_time_seconds": 0.0914996
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 51554,
+    "total_time_seconds": 0.0914544
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 20052,
+    "total_time_seconds": 0.0334802
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 18819,
+    "total_time_seconds": 0.0334345
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 37434,
+    "total_time_seconds": 0.0568607
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 38636,
+    "total_time_seconds": 0.0568268
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 69821,
+    "total_time_seconds": 0.0987244
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 70547,
+    "total_time_seconds": 0.0986872
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 19864,
+    "total_time_seconds": 0.0283788
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 19692,
+    "total_time_seconds": 0.0283448
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 26902,
+    "total_time_seconds": 0.0387696
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 26117,
+    "total_time_seconds": 0.0387365
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 35630,
+    "total_time_seconds": 0.0539796
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 36573,
+    "total_time_seconds": 0.0539567
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 6216,
+    "total_time_seconds": 0.008887
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 6377,
+    "total_time_seconds": 0.0088632
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 11061,
+    "total_time_seconds": 0.0159012
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 11202,
+    "total_time_seconds": 0.0158705
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 24482,
+    "total_time_seconds": 0.0345072
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 24677,
+    "total_time_seconds": 0.0345051
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 16837,
+    "total_time_seconds": 0.0241625
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 16915,
+    "total_time_seconds": 0.0241369
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 7187,
+    "total_time_seconds": 0.0131585
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 7156,
+    "total_time_seconds": 0.0131244
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 32684,
+    "total_time_seconds": 0.0458127
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 32634,
+    "total_time_seconds": 0.0457789
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 11926,
+    "total_time_seconds": 0.016783
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 11974,
+    "total_time_seconds": 0.0167538
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 9810,
+    "total_time_seconds": 0.0142341
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 6449,
+    "total_time_seconds": 0.0142141
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 19738,
+    "total_time_seconds": 0.0277984
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 19904,
+    "total_time_seconds": 0.0277565
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 1,
+    "total_attempts": 13995,
+    "total_time_seconds": 0.0200362
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 0,
+    "total_attempts": 13279,
+    "total_time_seconds": 0.020005
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 30079,
+    "total_time_seconds": 0.0428001
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 30686,
+    "total_time_seconds": 0.0427664
+  },
+  {
+    "thread_id": 0,
+    "blocks_found": 0,
+    "total_attempts": 594,
+    "total_time_seconds": 0.0008456
+  },
+  {
+    "thread_id": 1,
+    "blocks_found": 1,
+    "total_attempts": 579,
+    "total_time_seconds": 0.0008205
+  }
+]

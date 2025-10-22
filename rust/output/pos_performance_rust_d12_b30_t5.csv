@@ -1,0 +1,2 @@
+total_blocks,total_transactions,total_time_seconds,throughput_tps,avg_block_validation_time_ms,num_validators
+30,150,0.103864,1444.20,3.46,12
