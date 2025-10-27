@@ -41,6 +41,10 @@ struct Args {
 
 #[derive(Subcommand, Debug)]
 enum Command {
+    Bootstrap {
+        #[arg(short, long, default_value = "8000")]
+        port: u16,
+    },
     P2pServer {
         #[arg(short, long, default_value = "8000")]
         port: u16,
@@ -66,6 +70,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     if let Some(command) = args.command {
         return match command {
+            Command::Bootstrap { port } => p2p::run_bootstrap_node(port),
             Command::P2pServer { port } => run_p2p_server(port),
             Command::P2pClient { connect, node_id } => run_p2p_client(&connect, node_id),
         };
