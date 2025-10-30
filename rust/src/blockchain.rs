@@ -105,4 +105,21 @@ impl Blockchain {
         }
         true
     }
+
+    pub fn validate_block(&self, block: &Block) -> bool {
+        if !block.is_valid() {
+            return false;
+        }
+
+        if !block.meets_difficulty(self.difficulty) {
+            return false;
+        }
+
+        let last_block = self.last_block();
+        if block.previous_hash != last_block.hash {
+            return false;
+        }
+
+        true
+    }
 }

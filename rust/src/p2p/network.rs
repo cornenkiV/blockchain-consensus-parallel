@@ -128,7 +128,8 @@ impl NetworkLayer for StarNetworkServer {
 }
 
 pub struct StarNetworkClient {
-    stream: Arc<Mutex<TcpStream>>,
+    read_stream: Arc<Mutex<TcpStream>>,
+    write_stream: Arc<Mutex<TcpStream>>,
     bootstrap_address: String,
     node_id: String,
 }
@@ -142,8 +143,33 @@ impl StarNetworkClient {
             ))
         })?;
 
+        let mut read_stream = stream.try_clone().map_err(|e| {
+            NetworkError::ConnectionFailed(format!("Failed to clone stream for reading: {}", e))
+        })?;
+
+        let mut write_stream = stream;
+
+        read_stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .map_err(|e| {
+                NetworkError::ConnectionFailed(format!(
+                    "Failed to set read timeout on read_stream: {}",
+                    e
+                ))
+            })?;
+
+        write_stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .map_err(|e| {
+                NetworkError::ConnectionFailed(format!(
+                    "Failed to set read timeout on write_stream: {}",
+                    e
+                ))
+            })?;
+
         let client = StarNetworkClient {
-            stream: Arc::new(Mutex::new(stream)),
+            read_stream: Arc::new(Mutex::new(read_stream)),
+            write_stream: Arc::new(Mutex::new(write_stream)),
             bootstrap_address: bootstrap_address.to_string(),
             node_id: node_id.clone(),
         };
@@ -168,21 +194,21 @@ impl StarNetworkClient {
     }
 
     pub fn send(&self, message: &P2PMessage) -> Result<(), NetworkError> {
-        let mut stream = self.stream.lock();
+        let mut stream = self.write_stream.lock();
         message
             .send(&mut *stream)
             .map_err(|e| NetworkError::SendFailed(format!("Failed to send to bootstrap: {}", e)))
     }
 
     pub fn receive(&self) -> Result<P2PMessage, NetworkError> {
-        let mut stream = self.stream.lock();
+        let mut stream = self.read_stream.lock();
         P2PMessage::receive(&mut *stream).map_err(|e| {
             NetworkError::ReceiveFailed(format!("Failed to receive from bootstrap: {}", e))
         })
     }
 
     pub fn is_connected(&self) -> bool {
-        let stream = self.stream.lock();
+        let stream = self.read_stream.lock();
         stream.peer_addr().is_ok()
     }
 }

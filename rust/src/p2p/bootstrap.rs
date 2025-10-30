@@ -163,6 +163,7 @@ impl BootstrapNode {
                         Self::handle_message_static(
                             &node_id,
                             message,
+                            &mut stream,
                             &network,
                             &blockchain,
                             &peers,
@@ -183,6 +184,7 @@ impl BootstrapNode {
     fn handle_message_static(
         from_node: &str,
         message: P2PMessage,
+        stream: &mut TcpStream,
         network: &Arc<StarNetworkServer>,
         blockchain: &Arc<Mutex<Blockchain>>,
         peers: &Arc<Mutex<HashMap<String, PeerInfo>>>,
@@ -197,7 +199,7 @@ impl BootstrapNode {
 
                 let chain_len = chain.len();
                 let sync_msg = P2PMessage::BlockchainSync { chain };
-                if let Err(e) = network.send_to(&requester_id, &sync_msg) {
+                if let Err(e) = sync_msg.send(stream) {
                     eprintln!("Failed to send blockchain to {}: {}", requester_id, e);
                 } else {
                     println!("Sent blockchain to {} ({} blocks)", requester_id, chain_len);
@@ -205,15 +207,19 @@ impl BootstrapNode {
             }
 
             P2PMessage::Heartbeat { node_id, timestamp } => {
-                let mut peers_lock = peers.lock();
-                if let Some(peer) = peers_lock.get_mut(&node_id) {
-                    peer.last_seen = timestamp;
+                {
+                    let mut peers_lock = peers.lock();
+                    if let Some(peer) = peers_lock.get_mut(&node_id) {
+                        peer.last_seen = timestamp;
+                    }
                 }
 
                 let pong_msg = P2PMessage::Pong {
                     node_id: "bootstrap".to_string(),
                 };
-                network.send_to(&node_id, &pong_msg).ok();
+                if let Err(e) = pong_msg.send(stream) {
+                    eprintln!("Failed to send Pong to {}: {}", node_id, e);
+                }
             }
 
             P2PMessage::NewTransaction {
