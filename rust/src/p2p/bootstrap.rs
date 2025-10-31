@@ -1,7 +1,9 @@
 use crate::blockchain::Blockchain;
 use crate::p2p::error::NetworkError;
+use crate::p2p::mempool::TransactionPool;
 use crate::p2p::network::{NetworkLayer, StarNetworkServer};
-use crate::p2p::protocol::{P2PMessage, PeerInfo};
+use crate::p2p::protocol::{BlockTemplate, P2PMessage, PeerInfo};
+use crate::pos::Transaction;
 use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::io::{self, Write};
@@ -16,6 +18,7 @@ pub struct BootstrapNode {
     network: Arc<StarNetworkServer>,
     blockchain: Arc<Mutex<Blockchain>>,
     peers: Arc<Mutex<HashMap<String, PeerInfo>>>,
+    mempool: Arc<Mutex<TransactionPool>>,
     running: Arc<AtomicBool>,
     start_time: Instant,
 }
@@ -24,11 +27,13 @@ impl BootstrapNode {
     pub fn new(port: u16) -> Result<Self, NetworkError> {
         let network = StarNetworkServer::new(port)?;
         let blockchain = Blockchain::new(5);
+        let mempool = TransactionPool::new(1000);
 
         Ok(BootstrapNode {
             network: Arc::new(network),
             blockchain: Arc::new(Mutex::new(blockchain)),
             peers: Arc::new(Mutex::new(HashMap::new())),
+            mempool: Arc::new(Mutex::new(mempool)),
             running: Arc::new(AtomicBool::new(true)),
             start_time: Instant::now(),
         })
@@ -44,10 +49,12 @@ impl BootstrapNode {
         self.start_heartbeat_monitor();
 
         println!("Commands:");
-        println!("  peers      - Show connected peers");
-        println!("  blockchain - Show blockchain summary");
-        println!("  stats      - Show node statistics");
-        println!("  quit  - Shutdown bootstrap node");
+        println!("  peers        - Show connected peers");
+        println!("  blockchain   - Show blockchain summary");
+        println!("  mempool      - Show pending transactions");
+        println!("  clear-mempool- Clear all pending transactions");
+        println!("  stats        - Show node statistics");
+        println!("  quit         - Shutdown bootstrap node");
         println!();
 
         self.command_loop()?;
@@ -72,6 +79,8 @@ impl BootstrapNode {
             match input.trim() {
                 "peers" => self.show_peers(),
                 "blockchain" => self.show_blockchain(),
+                "mempool" => self.show_mempool(),
+                "clear-mempool" => self.clear_mempool(),
                 "stats" => self.show_stats(),
                 "quit" => {
                     println!("Shutting down bootstrap node...");
@@ -79,7 +88,7 @@ impl BootstrapNode {
                 }
                 "" => continue,
                 cmd => println!(
-                    "Unknown command: {}. Type 'peers', 'blockchain', 'stats', or 'exit'",
+                    "Unknown command: {}. Type 'peers', 'blockchain', 'stats', 'mempool', 'clear-mempool', or 'exit'",
                     cmd
                 ),
             }
@@ -92,6 +101,7 @@ impl BootstrapNode {
         let network = self.network.clone();
         let blockchain = self.blockchain.clone();
         let peers = self.peers.clone();
+        let mempool = self.mempool.clone();
         let running = self.running.clone();
 
         thread::spawn(move || {
@@ -134,6 +144,7 @@ impl BootstrapNode {
                             network.clone(),
                             blockchain.clone(),
                             peers.clone(),
+                            mempool.clone(),
                             running.clone(),
                         );
                     }
@@ -154,6 +165,7 @@ impl BootstrapNode {
         network: Arc<StarNetworkServer>,
         blockchain: Arc<Mutex<Blockchain>>,
         peers: Arc<Mutex<HashMap<String, PeerInfo>>>,
+        mempool: Arc<Mutex<TransactionPool>>,
         running: Arc<AtomicBool>,
     ) {
         thread::spawn(move || {
@@ -167,6 +179,7 @@ impl BootstrapNode {
                             &network,
                             &blockchain,
                             &peers,
+                            &mempool,
                         );
                     }
                     Err(e) => {
@@ -188,10 +201,11 @@ impl BootstrapNode {
         network: &Arc<StarNetworkServer>,
         blockchain: &Arc<Mutex<Blockchain>>,
         peers: &Arc<Mutex<HashMap<String, PeerInfo>>>,
+        mempool: &Arc<Mutex<TransactionPool>>,
     ) {
         match message {
             P2PMessage::RequestBlockchain { requester_id } => {
-                println!("← {} requested blockchain", requester_id);
+                println!("{} requested blockchain", requester_id);
                 let chain = {
                     let blockchain_lock = blockchain.lock();
                     blockchain_lock.chain.clone()
@@ -226,13 +240,31 @@ impl BootstrapNode {
                 transaction,
                 from_node,
             } => {
-                println!("Transaction from {}: {}", from_node, transaction);
+                let tx: Transaction = match serde_json::from_str(&transaction) {
+                    Ok(tx) => tx,
+                    Err(e) => {
+                        eprintln!("Invalid transaction format from {}: {}", from_node, e);
+                        return;
+                    }
+                };
+
+                //save it to mempool
+                let mut mempool_lock = mempool.lock();
+                if let Err(e) = mempool_lock.add_transaction(tx.clone()) {
+                    eprintln!("Failed to add transaction from {}: {}", from_node, e);
+                    return;
+                }
+
+                println!("New transaction added to mempool (from {})", from_node);
+                println!("   {} -> {}: {} coins", tx.from, tx.to, tx.amount);
+                println!("   Mempool size: {}", mempool_lock.size());
+                drop(mempool_lock);
+
                 let relay_msg = P2PMessage::NewTransaction {
-                    transaction: transaction.clone(),
-                    from_node: from_node.clone(),
+                    transaction,
+                    from_node,
                 };
                 network.broadcast(&relay_msg).ok();
-                println!("Relayed transaction to all peers");
             }
 
             P2PMessage::Pong { node_id } => {
@@ -356,6 +388,48 @@ impl BootstrapNode {
         println!("  Connected peers: {}", peers_count);
         println!("  Blockchain length: {} blocks", blocks_count);
         println!("  Status: Running");
+    }
+
+    fn show_mempool(&self) {
+        let mempool = self.mempool.lock();
+        println!("\n=== Transaction Mempool ===");
+        println!("Pending transactions: {}", mempool.size());
+
+        if mempool.size() == 0 {
+            println!("(empty)");
+        } else {
+            for (i, tx) in mempool.get_all().iter().enumerate() {
+                println!("{}. {} -> {}: {} coins", i + 1, tx.from, tx.to, tx.amount);
+            }
+        }
+        println!();
+    }
+
+    fn clear_mempool(&self) {
+        let mut mempool = self.mempool.lock();
+        let size = mempool.size();
+        mempool.clear();
+        println!("Cleared {} transactions from mempool", size);
+    }
+
+    ///block template for mining
+    pub fn create_block_template(&self) -> BlockTemplate {
+        let blockchain = self.blockchain.lock();
+        let mempool = self.mempool.lock();
+
+        let transactions = mempool.get_transactions(10);
+
+        let tx_strings: Vec<String> = transactions
+            .iter()
+            .map(|tx| serde_json::to_string(tx).unwrap())
+            .collect();
+
+        BlockTemplate::new(
+            blockchain.last_block().hash.clone(),
+            tx_strings,
+            blockchain.difficulty,
+            blockchain.chain.len(),
+        )
     }
 }
 

@@ -1,7 +1,9 @@
 use crate::blockchain::{Block, Blockchain};
 use crate::p2p::error::NetworkError;
+use crate::p2p::mempool::TransactionPool;
 use crate::p2p::network::StarNetworkClient;
 use crate::p2p::protocol::{P2PMessage, PeerInfo};
+use crate::pos::Transaction;
 use parking_lot::Mutex;
 use std::io::{self, Write};
 use std::sync::Arc;
@@ -14,6 +16,7 @@ pub struct RegularNode {
     client: Arc<StarNetworkClient>,
     blockchain: Arc<Mutex<Blockchain>>,
     peers: Arc<Mutex<Vec<PeerInfo>>>,
+    mempool: Arc<Mutex<TransactionPool>>,
     running: Arc<AtomicBool>,
 }
 
@@ -21,12 +24,14 @@ impl RegularNode {
     pub fn new(bootstrap_address: &str, node_id: String) -> Result<Self, NetworkError> {
         let client = StarNetworkClient::connect(bootstrap_address, node_id.clone())?;
         let blockchain = Blockchain::new(5);
+        let mempool = TransactionPool::new(1000);
 
         Ok(RegularNode {
             node_id,
             client: Arc::new(client),
             blockchain: Arc::new(Mutex::new(blockchain)),
             peers: Arc::new(Mutex::new(Vec::new())),
+            mempool: Arc::new(Mutex::new(mempool)),
             running: Arc::new(AtomicBool::new(true)),
         })
     }
@@ -55,6 +60,7 @@ impl RegularNode {
         let client = self.client.clone();
         let blockchain = self.blockchain.clone();
         let peers = self.peers.clone();
+        let mempool = self.mempool.clone();
         let running = self.running.clone();
         let node_id = self.node_id.clone();
 
@@ -67,6 +73,7 @@ impl RegularNode {
                             message,
                             &blockchain,
                             &peers,
+                            &mempool,
                             &running,
                         );
                     }
@@ -140,6 +147,7 @@ impl RegularNode {
         message: P2PMessage,
         blockchain: &Arc<Mutex<Blockchain>>,
         peers: &Arc<Mutex<Vec<PeerInfo>>>,
+        mempool: &Arc<Mutex<TransactionPool>>,
         running: &Arc<AtomicBool>,
     ) {
         match message {
@@ -187,7 +195,16 @@ impl RegularNode {
                 transaction,
                 from_node,
             } => {
-                // TODO
+                let tx: Transaction = match serde_json::from_str(&transaction) {
+                    Ok(tx) => tx,
+                    Err(_) => return,
+                };
+
+                let mut mempool_lock = mempool.lock();
+                if mempool_lock.add_transaction(tx.clone()).is_ok() {
+                    println!("New transaction received (from {})", from_node);
+                    println!("   {} -> {}: {} coins", tx.from, tx.to, tx.amount);
+                }
             }
 
             _ => {
@@ -216,6 +233,8 @@ impl RegularNode {
                 "peers" => self.show_peers(),
                 "status" => self.show_status(),
                 "sync" => self.force_sync(),
+                "add-tx" => self.add_transaction_interactive(),
+                "mempool" => self.show_mempool(),
                 "help" => self.show_help(),
                 "exit" | "quit" => {
                     println!("Shutting down node...");
@@ -309,8 +328,71 @@ impl RegularNode {
         println!("  peers       - Show connected peers");
         println!("  status      - Show node status");
         println!("  sync        - Blockchain sync");
+        println!("  add-tx      - Add new transaction");
+        println!("  mempool     - Show pending transactions");
         println!("  help        - Show all commands");
         println!("  exit        - Shutdown node");
+        println!();
+    }
+
+    fn add_transaction_interactive(&self) {
+        print!("From: ");
+        io::stdout().flush().ok();
+        let mut from = String::new();
+        io::stdin().read_line(&mut from).ok();
+
+        print!("To: ");
+        io::stdout().flush().ok();
+        let mut to = String::new();
+        io::stdin().read_line(&mut to).ok();
+
+        print!("Amount: ");
+        io::stdout().flush().ok();
+        let mut amount_str = String::new();
+        io::stdin().read_line(&mut amount_str).ok();
+
+        let amount: u64 = match amount_str.trim().parse() {
+            Ok(a) => a,
+            Err(_) => {
+                println!("Invalid amount");
+                return;
+            }
+        };
+
+        let tx = Transaction::new(from.trim().to_string(), to.trim().to_string(), amount);
+
+        let mut mempool = self.mempool.lock();
+        if let Err(e) = mempool.add_transaction(tx.clone()) {
+            println!("Failed: {}", e);
+            return;
+        }
+        drop(mempool);
+
+        let tx_json = serde_json::to_string(&tx).unwrap();
+        let msg = P2PMessage::NewTransaction {
+            transaction: tx_json,
+            from_node: self.node_id.clone(),
+        };
+
+        if let Err(e) = self.client.send(&msg) {
+            println!("Failed to broadcast: {}", e);
+        } else {
+            println!("Transaction added and broadcast to network");
+        }
+    }
+
+    fn show_mempool(&self) {
+        let mempool = self.mempool.lock();
+        println!("\n=== Local Mempool ===");
+        println!("Pending transactions: {}", mempool.size());
+
+        if mempool.size() == 0 {
+            println!("(empty)");
+        } else {
+            for (i, tx) in mempool.get_all().iter().enumerate() {
+                println!("{}. {} -> {}: {} coins", i + 1, tx.from, tx.to, tx.amount);
+            }
+        }
         println!();
     }
 }
