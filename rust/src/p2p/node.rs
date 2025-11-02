@@ -26,7 +26,10 @@ pub struct RegularNode {
 impl RegularNode {
     pub fn new(bootstrap_address: &str, node_id: String) -> Result<Self, NetworkError> {
         let client = StarNetworkClient::connect(bootstrap_address, node_id.clone())?;
-        let blockchain = Blockchain::new(5);
+        let blockchain = crate::blockchain::Blockchain {
+            chain: Vec::new(),
+            difficulty: 5,
+        };
         let mempool = TransactionPool::new(1000);
 
         Ok(RegularNode {
@@ -175,9 +178,44 @@ impl RegularNode {
             }
 
             P2PMessage::BlockchainSync { chain } => {
+                println!("Received blockchain ({} blocks)", chain.len());
+
                 let mut blockchain_lock = blockchain.lock();
-                blockchain_lock.chain = chain;
-                println!("Blockchain synced: {} blocks", blockchain_lock.chain.len());
+
+                if blockchain_lock.chain.is_empty() {
+                    if !crate::blockchain::Blockchain::validate_chain(
+                        &chain,
+                        blockchain_lock.difficulty,
+                    ) {
+                        eprintln!("   Received invalid chain, rejecting");
+                        return;
+                    }
+                    blockchain_lock.chain = chain;
+                    println!(
+                        "   Blockchain initialized: {} blocks",
+                        blockchain_lock.chain.len()
+                    );
+                    return;
+                }
+
+                if !blockchain_lock.is_longer_chain(&chain) {
+                    println!("   Current chain is equal or longer, no action needed");
+                    return;
+                }
+
+                if !crate::blockchain::Blockchain::validate_chain(
+                    &chain,
+                    blockchain_lock.difficulty,
+                ) {
+                    eprintln!("   Received invalid chain, rejecting");
+                    return;
+                }
+
+                println!("   Received chain is longer and valid!");
+                blockchain_lock.reorganize(chain);
+
+                println!("   Chain reorganization complete");
+                println!("   New chain length: {}", blockchain_lock.chain.len());
             }
 
             P2PMessage::NewBlock { block, miner_id } => {
@@ -207,7 +245,13 @@ impl RegularNode {
                         mempool_lock.clear();
                     }
                 } else {
-                    eprintln!("Invalid block received, rejected");
+                    println!("Received block doesn't fit current chain");
+
+                    //request full blockchain to resolve fork
+                    let msg = P2PMessage::RequestBlockchain {
+                        requester_id: node_id.to_string(),
+                    };
+                    client.send(&msg).ok();
                 }
             }
 
@@ -277,6 +321,7 @@ impl RegularNode {
                 "add-tx" => self.add_transaction_interactive(),
                 "mempool" => self.show_mempool(),
                 "mining-status" => self.show_mining_status(),
+                "simulate-fork" => self.simulate_fork(),
                 "help" => self.show_help(),
                 "exit" | "quit" => {
                     println!("Shutting down node...");
@@ -364,6 +409,33 @@ impl RegularNode {
         }
     }
 
+    fn simulate_fork(&self) {
+        println!("\n=== Fork Simulation ===");
+        println!("This simulates a scenario where this node has a shorter chain");
+        println!();
+
+        println!("1: Getting current blockchain from network...");
+        self.force_sync();
+        thread::sleep(Duration::from_millis(500));
+
+        {
+            let mut blockchain = self.blockchain.lock();
+            if blockchain.chain.len() > 1 {
+                blockchain.chain.pop();
+                println!("2: Removed last block from chain");
+                println!("   Local chain now: {} blocks", blockchain.chain.len());
+            } else {
+                println!("   Chain too short for fork simulation");
+                return;
+            }
+        }
+
+        println!("\n3: Requesting sync from network...");
+        println!("Network should have longer chain, fork will be resolved");
+        thread::sleep(Duration::from_secs(1));
+        self.force_sync();
+    }
+
     fn show_help(&self) {
         println!("\n=== Available Commands ===");
         println!("  blockchain     - Show blockchain");
@@ -373,6 +445,7 @@ impl RegularNode {
         println!("  add-tx         - Add new transaction");
         println!("  mempool        - Show pending transactions");
         println!("  mining-status  - Show mining status");
+        println!("  simulate-fork  - Simulate fork scenario");
         println!("  help           - Show all commands");
         println!("  exit           - Shutdown node");
         println!();

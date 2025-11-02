@@ -57,6 +57,7 @@ impl BootstrapNode {
         println!("  clear-mempool- Clear all pending transactions");
         println!("  start-mining - Initiate mining");
         println!("  stop-mining  - Stop current mining");
+        println!("  sync         - Request blockchain from peers");
         println!("  stats        - Show node statistics");
         println!("  quit         - Shutdown bootstrap node");
         println!();
@@ -87,6 +88,7 @@ impl BootstrapNode {
                 "clear-mempool" => self.clear_mempool(),
                 "start-mining" => self.initiate_mining_round(),
                 "stop-mining" => self.stop_mining(),
+                "sync" => self.request_blockchain_sync(),
                 "stats" => self.show_stats(),
                 "quit" => {
                     println!("Shutting down bootstrap node...");
@@ -105,6 +107,7 @@ impl BootstrapNode {
         let blockchain = self.blockchain.clone();
         let peers = self.peers.clone();
         let mempool = self.mempool.clone();
+        let mining_active = self.mining_active.clone();
         let running = self.running.clone();
 
         thread::spawn(move || {
@@ -148,6 +151,7 @@ impl BootstrapNode {
                             blockchain.clone(),
                             peers.clone(),
                             mempool.clone(),
+                            mining_active.clone(),
                             running.clone(),
                         );
                     }
@@ -169,6 +173,7 @@ impl BootstrapNode {
         blockchain: Arc<Mutex<Blockchain>>,
         peers: Arc<Mutex<HashMap<String, PeerInfo>>>,
         mempool: Arc<Mutex<TransactionPool>>,
+        mining_active: Arc<AtomicBool>,
         running: Arc<AtomicBool>,
     ) {
         thread::spawn(move || {
@@ -183,6 +188,7 @@ impl BootstrapNode {
                             &blockchain,
                             &peers,
                             &mempool,
+                            &mining_active,
                         );
                     }
                     Err(e) => {
@@ -205,6 +211,7 @@ impl BootstrapNode {
         blockchain: &Arc<Mutex<Blockchain>>,
         peers: &Arc<Mutex<HashMap<String, PeerInfo>>>,
         mempool: &Arc<Mutex<TransactionPool>>,
+        mining_active: &Arc<AtomicBool>,
     ) {
         match message {
             P2PMessage::RequestBlockchain { requester_id } => {
@@ -221,6 +228,36 @@ impl BootstrapNode {
                 } else {
                     println!("Sent blockchain to {} ({} blocks)", requester_id, chain_len);
                 }
+            }
+
+            P2PMessage::BlockchainSync { chain } => {
+                println!(
+                    "Received blockchain from {} ({} blocks)",
+                    from_node,
+                    chain.len()
+                );
+
+                let mut blockchain_lock = blockchain.lock();
+
+                if !blockchain_lock.is_longer_chain(&chain) {
+                    println!("   Chain is not longer, ignoring");
+                    return;
+                }
+
+                if !crate::blockchain::Blockchain::validate_chain(
+                    &chain,
+                    blockchain_lock.difficulty,
+                ) {
+                    eprintln!("   Chain validation failed, rejecting");
+                    return;
+                }
+
+                println!("   Chain is valid and longer - accepting!");
+                blockchain_lock.reorganize(chain.clone());
+                drop(blockchain_lock);
+
+                let msg = P2PMessage::BlockchainSync { chain };
+                network.broadcast(&msg).ok();
             }
 
             P2PMessage::Heartbeat { node_id, timestamp } => {
@@ -299,7 +336,8 @@ impl BootstrapNode {
                     println!("  Nonce: {}", block.nonce);
                 }
 
-                //broadcast block to peers
+                mining_active.store(false, Ordering::SeqCst);
+
                 let msg = P2PMessage::NewBlock {
                     block: block.clone(),
                     miner_id: miner_id.clone(),
@@ -525,6 +563,18 @@ impl BootstrapNode {
         self.mining_active.store(false, Ordering::SeqCst);
         self.network.broadcast(&P2PMessage::MiningStop).ok();
         println!("Mining stopped");
+    }
+
+    fn request_blockchain_sync(&self) {
+        println!("Requesting blockchain from all peers...");
+        let msg = P2PMessage::RequestBlockchain {
+            requester_id: "bootstrap".to_string(),
+        };
+        if let Err(e) = self.network.broadcast(&msg) {
+            eprintln!("Failed to broadcast sync request: {}", e);
+        } else {
+            println!("Sync request sent to all peers");
+        }
     }
 }
 

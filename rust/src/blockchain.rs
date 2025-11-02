@@ -122,4 +122,55 @@ impl Blockchain {
 
         true
     }
+
+    pub fn validate_chain(chain: &[Block], difficulty: usize) -> bool {
+        if chain.is_empty() {
+            eprintln!("Chain validation failed: Empty chain");
+            return false;
+        }
+
+        let required_prefix = "0".repeat(difficulty);
+
+        for i in 1..chain.len() {
+            let current = &chain[i];
+            let previous = &chain[i - 1];
+
+            if !current.is_valid() {
+                eprintln!("Chain validation failed: Block {} has invalid hash", i);
+                return false;
+            }
+
+            if current.previous_hash != previous.hash {
+                eprintln!(
+                    "Chain validation failed: Block {} has wrong previous_hash",
+                    i
+                );
+                return false;
+            }
+
+            if !current.hash.starts_with(&required_prefix) {
+                eprintln!("Chain validation failed: Block {} has invalid PoW", i);
+                return false;
+            }
+
+            if current.timestamp < previous.timestamp {
+                eprintln!("Chain validation failed: Block {} has invalid timestamp", i);
+                return false;
+            }
+        }
+
+        true
+    }
+
+    pub fn is_longer_chain(&self, new_chain: &[Block]) -> bool {
+        new_chain.len() > self.chain.len()
+    }
+
+    pub fn reorganize(&mut self, new_chain: Vec<Block>) {
+        println!("CHAIN REORGANIZATION");
+        println!("   Old chain length: {}", self.chain.len());
+        println!("   New chain length: {}", new_chain.len());
+
+        self.chain = new_chain;
+    }
 }
