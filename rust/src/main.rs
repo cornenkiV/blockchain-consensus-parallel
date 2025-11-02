@@ -1,10 +1,11 @@
 mod blockchain;
+mod p2p;
 mod pos;
 mod pow_parallel;
 mod pow_sequential;
 mod utils;
 
-use clap::{Parser, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum};
 use std::error::Error;
 use std::process;
 
@@ -19,6 +20,9 @@ enum ConsensusMode {
 #[command(name = "blockchain-consensus")]
 #[command(about = "Blockchain consensus PoW and PoS")]
 struct Args {
+    #[command(subcommand)]
+    command: Option<Command>,
+
     #[arg(short, long, value_enum, default_value = "pow-sequential")]
     mode: ConsensusMode,
 
@@ -35,6 +39,21 @@ struct Args {
     transactions: usize,
 }
 
+#[derive(Subcommand, Debug)]
+enum Command {
+    Bootstrap {
+        #[arg(short, long, default_value = "8000")]
+        port: u16,
+    },
+    Node {
+        #[arg(short, long)]
+        connect: String,
+
+        #[arg(long)]
+        node_id: Option<String>,
+    },
+}
+
 fn main() {
     if let Err(e) = run() {
         eprintln!("Error: {}", e);
@@ -44,6 +63,15 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
+
+    if let Some(command) = args.command {
+        return match command {
+            Command::Bootstrap { port } => p2p::run_bootstrap_node(port),
+            Command::Node { connect, node_id } => {
+                p2p::run_regular_node(&connect, node_id).map_err(|e| e.into())
+            }
+        };
+    }
 
     if args.blocks == 0 {
         return Err("Number of blocks must be at least 1".into());
