@@ -1,6 +1,8 @@
-use crate::blockchain::{Block, Blockchain};
+use crate::blockchain::Blockchain;
 use crate::p2p::error::NetworkError;
+use crate::p2p::logger::{NetworkEvent, NetworkLogger};
 use crate::p2p::mempool::TransactionPool;
+use crate::p2p::metrics::NetworkStatistics;
 use crate::p2p::network::StarNetworkClient;
 use crate::p2p::protocol::{BlockTemplate, P2PMessage, PeerInfo};
 use crate::pos::Transaction;
@@ -9,7 +11,7 @@ use std::io::{self, Write};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::{self, JoinHandle};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 pub struct RegularNode {
     node_id: String,
@@ -21,6 +23,8 @@ pub struct RegularNode {
     mining_stop_flag: Arc<AtomicBool>,
     mining_thread: Arc<Mutex<Option<JoinHandle<()>>>>,
     running: Arc<AtomicBool>,
+    logger: NetworkLogger,
+    mining_start_time: Arc<Mutex<Option<Instant>>>,
 }
 
 impl RegularNode {
@@ -42,6 +46,8 @@ impl RegularNode {
             mining_stop_flag: Arc::new(AtomicBool::new(false)),
             mining_thread: Arc::new(Mutex::new(None)),
             running: Arc::new(AtomicBool::new(true)),
+            logger: NetworkLogger::new(),
+            mining_start_time: Arc::new(Mutex::new(None)),
         })
     }
 
@@ -75,6 +81,8 @@ impl RegularNode {
         let mining_thread = self.mining_thread.clone();
         let running = self.running.clone();
         let node_id = self.node_id.clone();
+        let logger = self.logger.clone();
+        let mining_start_time = self.mining_start_time.clone();
 
         thread::spawn(move || {
             while running.load(Ordering::SeqCst) {
@@ -91,6 +99,8 @@ impl RegularNode {
                             &mining_stop_flag,
                             &mining_thread,
                             &running,
+                            &logger,
+                            &mining_start_time,
                         );
                     }
                     Err(e) => {
@@ -169,6 +179,8 @@ impl RegularNode {
         mining_stop_flag: &Arc<AtomicBool>,
         mining_thread: &Arc<Mutex<Option<JoinHandle<()>>>>,
         running: &Arc<AtomicBool>,
+        logger: &NetworkLogger,
+        mining_start_time: &Arc<Mutex<Option<Instant>>>,
     ) {
         match message {
             P2PMessage::PeerList { peers: peer_list } => {
@@ -179,6 +191,12 @@ impl RegularNode {
 
             P2PMessage::BlockchainSync { chain } => {
                 println!("Received blockchain ({} blocks)", chain.len());
+
+                let timestamp = chrono::Utc::now().timestamp() as u64;
+                logger.log(NetworkEvent::ChainSyncReceived {
+                    chain_length: chain.len(),
+                    timestamp,
+                });
 
                 let mut blockchain_lock = blockchain.lock();
 
@@ -212,6 +230,14 @@ impl RegularNode {
                 }
 
                 println!("   Received chain is longer and valid!");
+
+                let old_height = blockchain_lock.chain.len();
+                logger.log(NetworkEvent::ChainReorganization {
+                    old_height,
+                    new_height: chain.len(),
+                    timestamp,
+                });
+
                 blockchain_lock.reorganize(chain);
 
                 println!("   Chain reorganization complete");
@@ -219,6 +245,19 @@ impl RegularNode {
             }
 
             P2PMessage::NewBlock { block, miner_id } => {
+                let timestamp = chrono::Utc::now().timestamp() as u64;
+                let block_height = {
+                    let blockchain_lock = blockchain.lock();
+                    blockchain_lock.chain.len()
+                };
+
+                logger.log(NetworkEvent::BlockReceived {
+                    block_height,
+                    block_hash: block.hash.clone(),
+                    miner_id: miner_id.clone(),
+                    timestamp,
+                });
+
                 let is_valid = {
                     let blockchain_lock = blockchain.lock();
                     blockchain_lock.validate_block(&block)
@@ -229,23 +268,42 @@ impl RegularNode {
                     {
                         let mut blockchain_lock = blockchain.lock();
                         blockchain_lock.add_block(block.clone());
+                        let new_height = blockchain_lock.chain.len() - 1;
                         println!("\nNew block added to chain (mined by {})", miner_id);
-                        println!(
-                            "  Block #{}: {}...",
-                            blockchain_lock.chain.len() - 1,
-                            &block.hash[..16]
-                        );
+                        println!("  Block #{}: {}...", new_height, &block.hash[..16]);
+
+                        logger.log(NetworkEvent::BlockAdded {
+                            block_height: new_height,
+                            block_hash: block.hash.clone(),
+                            timestamp,
+                        });
                     }
 
                     mining_stop_flag.store(true, Ordering::SeqCst);
                     mining_active.store(false, Ordering::SeqCst);
+
+                    logger.log(NetworkEvent::MiningStopped {
+                        node_id: node_id.to_string(),
+                        reason: "block_found_by_peer".to_string(),
+                        timestamp,
+                    });
 
                     {
                         let mut mempool_lock = mempool.lock();
                         mempool_lock.clear();
                     }
                 } else {
-                    println!("Received block doesn't fit current chain");
+                    println!("Received block doesnt fit current chain");
+
+                    logger.log(NetworkEvent::ForkDetected {
+                        block_height,
+                        timestamp,
+                    });
+
+                    logger.log(NetworkEvent::ChainSyncRequested {
+                        requesting_node: node_id.to_string(),
+                        timestamp,
+                    });
 
                     //request full blockchain to resolve fork
                     let msg = P2PMessage::RequestBlockchain {
@@ -267,6 +325,8 @@ impl RegularNode {
                     mining_active,
                     mining_stop_flag,
                     mining_thread,
+                    logger,
+                    mining_start_time,
                 );
             }
 
@@ -274,6 +334,12 @@ impl RegularNode {
                 println!("Mining stop signal received");
                 mining_stop_flag.store(true, Ordering::SeqCst);
                 mining_active.store(false, Ordering::SeqCst);
+
+                logger.log(NetworkEvent::MiningStopped {
+                    node_id: node_id.to_string(),
+                    reason: "stop_signal_received".to_string(),
+                    timestamp: chrono::Utc::now().timestamp() as u64,
+                });
             }
 
             P2PMessage::NewTransaction {
@@ -285,8 +351,18 @@ impl RegularNode {
                     Err(_) => return,
                 };
 
+                let tx_hash = format!("{:x}", md5::compute(transaction.as_bytes()));
+                let timestamp = chrono::Utc::now().timestamp() as u64;
+
+                logger.log(NetworkEvent::TransactionReceived {
+                    tx_hash: tx_hash.clone(),
+                    timestamp,
+                });
+
                 let mut mempool_lock = mempool.lock();
                 if mempool_lock.add_transaction(tx.clone()).is_ok() {
+                    logger.log(NetworkEvent::TransactionAdded { tx_hash, timestamp });
+
                     println!("New transaction received (from {})", from_node);
                     println!("   {} -> {}: {} coins", tx.from, tx.to, tx.amount);
                 }
@@ -322,6 +398,9 @@ impl RegularNode {
                 "mempool" => self.show_mempool(),
                 "mining-status" => self.show_mining_status(),
                 "simulate-fork" => self.simulate_fork(),
+                "network-stats" => self.show_network_stats(),
+                "export-logs" => self.export_logs(),
+                "clear-logs" => self.clear_logs(),
                 "help" => self.show_help(),
                 "exit" | "quit" => {
                     println!("Shutting down node...");
@@ -446,6 +525,9 @@ impl RegularNode {
         println!("  mempool        - Show pending transactions");
         println!("  mining-status  - Show mining status");
         println!("  simulate-fork  - Simulate fork scenario");
+        println!("  network-stats  - Show network statistics from events");
+        println!("  export-logs    - Export logs to JSON/CSV");
+        println!("  clear-logs     - Clear all logged events");
         println!("  help           - Show all commands");
         println!("  exit           - Shutdown node");
         println!();
@@ -485,6 +567,8 @@ impl RegularNode {
         drop(mempool);
 
         let tx_json = serde_json::to_string(&tx).unwrap();
+        let tx_hash = format!("{:x}", md5::compute(tx_json.as_bytes()));
+
         let msg = P2PMessage::NewTransaction {
             transaction: tx_json,
             from_node: self.node_id.clone(),
@@ -493,6 +577,10 @@ impl RegularNode {
         if let Err(e) = self.client.send(&msg) {
             println!("Failed to broadcast: {}", e);
         } else {
+            self.logger.log(NetworkEvent::TransactionBroadcast {
+                tx_hash,
+                timestamp: chrono::Utc::now().timestamp() as u64,
+            });
             println!("Transaction added and broadcast to network");
         }
     }
@@ -519,6 +607,8 @@ impl RegularNode {
         mining_active: &Arc<AtomicBool>,
         mining_stop_flag: &Arc<AtomicBool>,
         mining_thread: &Arc<Mutex<Option<JoinHandle<()>>>>,
+        logger: &NetworkLogger,
+        mining_start_time: &Arc<Mutex<Option<Instant>>>,
     ) {
         println!("\nMining start signal received");
         println!(
@@ -534,6 +624,14 @@ impl RegularNode {
 
         mining_stop_flag.store(false, Ordering::SeqCst);
         mining_active.store(true, Ordering::SeqCst);
+
+        let timestamp = chrono::Utc::now().timestamp() as u64;
+        logger.log(NetworkEvent::MiningStarted {
+            node_id: node_id.to_string(),
+            timestamp,
+        });
+
+        *mining_start_time.lock() = Some(Instant::now());
 
         let node_id = node_id.to_string();
         let client = client.clone();
@@ -559,7 +657,7 @@ impl RegularNode {
 
                 let msg = P2PMessage::NewBlock {
                     block,
-                    miner_id: node_id,
+                    miner_id: node_id.clone(),
                 };
 
                 client.send(&msg).ok();
@@ -585,6 +683,57 @@ impl RegularNode {
         let blockchain = self.blockchain.lock();
         println!("Current chain length: {}", blockchain.chain.len());
         println!();
+    }
+
+    fn show_network_stats(&self) {
+        let events = self.logger.get_events();
+        let stats = NetworkStatistics::from_events(&events);
+        stats.display();
+    }
+
+    fn export_logs(&self) {
+        println!("\nExport logs:");
+        println!("  1. JSON format");
+        println!("  2. CSV format");
+        print!("Select format: ");
+        io::stdout().flush().ok();
+
+        let stdin = io::stdin();
+        let mut input = String::new();
+        if stdin.read_line(&mut input).is_err() {
+            eprintln!("Failed to read input");
+            return;
+        }
+
+        match input.trim() {
+            "1" => {
+                let filename = format!(
+                    "{}_logs_{}.json",
+                    self.node_id,
+                    chrono::Utc::now().timestamp()
+                );
+                if let Err(e) = self.logger.export_json(&filename) {
+                    eprintln!("Failed to export JSON: {}", e);
+                }
+            }
+            "2" => {
+                let filename = format!(
+                    "{}_logs_{}.csv",
+                    self.node_id,
+                    chrono::Utc::now().timestamp()
+                );
+                if let Err(e) = self.logger.export_csv(&filename) {
+                    eprintln!("Failed to export CSV: {}", e);
+                }
+            }
+            _ => println!("Invalid selection"),
+        }
+    }
+
+    fn clear_logs(&self) {
+        let count = self.logger.count();
+        self.logger.clear();
+        println!("Cleared {} logged events", count);
     }
 }
 

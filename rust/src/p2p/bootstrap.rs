@@ -1,6 +1,8 @@
 use crate::blockchain::Blockchain;
 use crate::p2p::error::NetworkError;
+use crate::p2p::logger::{NetworkEvent, NetworkLogger};
 use crate::p2p::mempool::TransactionPool;
+use crate::p2p::metrics::NetworkStatistics;
 use crate::p2p::network::{NetworkLayer, StarNetworkServer};
 use crate::p2p::protocol::{BlockTemplate, P2PMessage, PeerInfo};
 use crate::pos::Transaction;
@@ -9,7 +11,7 @@ use std::collections::HashMap;
 use std::io::{self, Write};
 use std::net::TcpStream;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -22,6 +24,9 @@ pub struct BootstrapNode {
     mining_active: Arc<AtomicBool>,
     running: Arc<AtomicBool>,
     start_time: Instant,
+    logger: NetworkLogger,
+    mining_round: Arc<AtomicU64>,
+    mining_round_start: Arc<Mutex<Option<Instant>>>,
 }
 
 impl BootstrapNode {
@@ -38,6 +43,9 @@ impl BootstrapNode {
             mining_active: Arc::new(AtomicBool::new(false)),
             running: Arc::new(AtomicBool::new(true)),
             start_time: Instant::now(),
+            logger: NetworkLogger::new(),
+            mining_round: Arc::new(AtomicU64::new(0)),
+            mining_round_start: Arc::new(Mutex::new(None)),
         })
     }
 
@@ -59,6 +67,9 @@ impl BootstrapNode {
         println!("  stop-mining  - Stop current mining");
         println!("  sync         - Request blockchain from peers");
         println!("  stats        - Show node statistics");
+        println!("  network-stats- Show network statistics from events");
+        println!("  export-logs  - Export logs to JSON/CSV");
+        println!("  clear-logs   - Clear all logged events");
         println!("  quit         - Shutdown bootstrap node");
         println!();
 
@@ -90,6 +101,9 @@ impl BootstrapNode {
                 "stop-mining" => self.stop_mining(),
                 "sync" => self.request_blockchain_sync(),
                 "stats" => self.show_stats(),
+                "network-stats" => self.show_network_stats(),
+                "export-logs" => self.export_logs(),
+                "clear-logs" => self.clear_logs(),
                 "quit" => {
                     println!("Shutting down bootstrap node...");
                     break;
@@ -109,12 +123,17 @@ impl BootstrapNode {
         let mempool = self.mempool.clone();
         let mining_active = self.mining_active.clone();
         let running = self.running.clone();
+        let logger = self.logger.clone();
+        let mining_round = self.mining_round.clone();
+        let mining_round_start = self.mining_round_start.clone();
 
         thread::spawn(move || {
             while running.load(Ordering::Relaxed) {
                 match network.accept_connection() {
                     Ok((node_id, stream)) => {
                         network.register_peer(node_id.clone(), stream.try_clone().unwrap());
+
+                        let timestamp = chrono::Utc::now().timestamp() as u64;
                         {
                             let mut peers_lock = peers.lock();
                             peers_lock.insert(
@@ -122,11 +141,17 @@ impl BootstrapNode {
                                 PeerInfo {
                                     node_id: node_id.clone(),
                                     address: "test".to_string(),
-                                    last_seen: chrono::Utc::now().timestamp() as u64,
+                                    last_seen: timestamp,
                                     blocks_mined: 0,
                                 },
                             );
                         }
+
+                        logger.log(NetworkEvent::PeerConnected {
+                            node_id: node_id.clone(),
+                            address: "test".to_string(),
+                            timestamp,
+                        });
 
                         let peer_list = Self::get_peer_list_static(&peers);
                         let peer_list_msg = P2PMessage::PeerList {
@@ -153,6 +178,9 @@ impl BootstrapNode {
                             mempool.clone(),
                             mining_active.clone(),
                             running.clone(),
+                            logger.clone(),
+                            mining_round.clone(),
+                            mining_round_start.clone(),
                         );
                     }
                     Err(e) => {
@@ -175,6 +203,9 @@ impl BootstrapNode {
         mempool: Arc<Mutex<TransactionPool>>,
         mining_active: Arc<AtomicBool>,
         running: Arc<AtomicBool>,
+        logger: NetworkLogger,
+        mining_round: Arc<AtomicU64>,
+        mining_round_start: Arc<Mutex<Option<Instant>>>,
     ) {
         thread::spawn(move || {
             while running.load(Ordering::Relaxed) {
@@ -189,11 +220,19 @@ impl BootstrapNode {
                             &peers,
                             &mempool,
                             &mining_active,
+                            &logger,
+                            &mining_round,
+                            &mining_round_start,
                         );
                     }
                     Err(e) => {
                         eprintln!("Error receiving from {}: {}", node_id, e);
                         // peer disconnected
+                        let timestamp = chrono::Utc::now().timestamp() as u64;
+                        logger.log(NetworkEvent::PeerDisconnected {
+                            node_id: node_id.clone(),
+                            timestamp,
+                        });
                         Self::remove_peer_static(&node_id, &network, &peers);
                         break;
                     }
@@ -212,10 +251,19 @@ impl BootstrapNode {
         peers: &Arc<Mutex<HashMap<String, PeerInfo>>>,
         mempool: &Arc<Mutex<TransactionPool>>,
         mining_active: &Arc<AtomicBool>,
+        logger: &NetworkLogger,
+        mining_round: &Arc<AtomicU64>,
+        mining_round_start: &Arc<Mutex<Option<Instant>>>,
     ) {
         match message {
             P2PMessage::RequestBlockchain { requester_id } => {
                 println!("{} requested blockchain", requester_id);
+
+                logger.log(NetworkEvent::ChainSyncRequested {
+                    requesting_node: requester_id.clone(),
+                    timestamp: chrono::Utc::now().timestamp() as u64,
+                });
+
                 let chain = {
                     let blockchain_lock = blockchain.lock();
                     blockchain_lock.chain.clone()
@@ -237,7 +285,13 @@ impl BootstrapNode {
                     chain.len()
                 );
 
+                logger.log(NetworkEvent::ChainSyncReceived {
+                    chain_length: chain.len(),
+                    timestamp: chrono::Utc::now().timestamp() as u64,
+                });
+
                 let mut blockchain_lock = blockchain.lock();
+                let old_height = blockchain_lock.chain.len();
 
                 if !blockchain_lock.is_longer_chain(&chain) {
                     println!("   Chain is not longer, ignoring");
@@ -253,6 +307,13 @@ impl BootstrapNode {
                 }
 
                 println!("   Chain is valid and longer - accepting!");
+
+                logger.log(NetworkEvent::ChainReorganization {
+                    old_height,
+                    new_height: chain.len(),
+                    timestamp: chrono::Utc::now().timestamp() as u64,
+                });
+
                 blockchain_lock.reorganize(chain.clone());
                 drop(blockchain_lock);
 
@@ -288,6 +349,14 @@ impl BootstrapNode {
                     }
                 };
 
+                let tx_hash = format!("{:x}", md5::compute(transaction.as_bytes()));
+                let timestamp = chrono::Utc::now().timestamp() as u64;
+
+                logger.log(NetworkEvent::TransactionReceived {
+                    tx_hash: tx_hash.clone(),
+                    timestamp,
+                });
+
                 //save it to mempool
                 let mut mempool_lock = mempool.lock();
                 if let Err(e) = mempool_lock.add_transaction(tx.clone()) {
@@ -295,10 +364,17 @@ impl BootstrapNode {
                     return;
                 }
 
+                logger.log(NetworkEvent::TransactionAdded {
+                    tx_hash: tx_hash.clone(),
+                    timestamp,
+                });
+
                 println!("New transaction added to mempool (from {})", from_node);
                 println!("   {} -> {}: {} coins", tx.from, tx.to, tx.amount);
                 println!("   Mempool size: {}", mempool_lock.size());
                 drop(mempool_lock);
+
+                logger.log(NetworkEvent::TransactionBroadcast { tx_hash, timestamp });
 
                 let relay_msg = P2PMessage::NewTransaction {
                     transaction,
@@ -314,6 +390,19 @@ impl BootstrapNode {
             P2PMessage::NewBlock { block, miner_id } => {
                 println!("\nNew block found by {}!", miner_id);
 
+                let timestamp = chrono::Utc::now().timestamp() as u64;
+                let block_height = {
+                    let blockchain_lock = blockchain.lock();
+                    blockchain_lock.chain.len()
+                };
+
+                logger.log(NetworkEvent::BlockReceived {
+                    block_height,
+                    block_hash: block.hash.clone(),
+                    miner_id: miner_id.clone(),
+                    timestamp,
+                });
+
                 let is_valid = {
                     let blockchain_lock = blockchain.lock();
                     blockchain_lock.validate_block(&block)
@@ -321,6 +410,11 @@ impl BootstrapNode {
 
                 if !is_valid {
                     eprintln!("Invalid block, rejected");
+                    logger.log(NetworkEvent::BlockRejected {
+                        block_hash: block.hash.clone(),
+                        reason: "validation_failed".to_string(),
+                        timestamp,
+                    });
                     return;
                 }
 
@@ -328,15 +422,36 @@ impl BootstrapNode {
                 {
                     let mut blockchain_lock = blockchain.lock();
                     blockchain_lock.add_block(block.clone());
-                    println!(
-                        "Block #{} added to blockchain",
-                        blockchain_lock.chain.len() - 1
-                    );
+                    let new_height = blockchain_lock.chain.len() - 1;
+                    println!("Block #{} added to blockchain", new_height);
                     println!("  Hash: {}...", &block.hash[..16]);
                     println!("  Nonce: {}", block.nonce);
+
+                    logger.log(NetworkEvent::BlockAdded {
+                        block_height: new_height,
+                        block_hash: block.hash.clone(),
+                        timestamp,
+                    });
                 }
 
                 mining_active.store(false, Ordering::SeqCst);
+
+                let round_num = mining_round.load(Ordering::SeqCst);
+                if let Some(start_time) = mining_round_start.lock().take() {
+                    let duration_ms = start_time.elapsed().as_millis() as u64;
+                    logger.log(NetworkEvent::MiningRoundCompleted {
+                        round_number: round_num,
+                        winner_id: miner_id.clone(),
+                        duration_ms,
+                        timestamp,
+                    });
+                }
+
+                logger.log(NetworkEvent::BlockBroadcast {
+                    block_height,
+                    block_hash: block.hash.clone(),
+                    timestamp,
+                });
 
                 let msg = P2PMessage::NewBlock {
                     block: block.clone(),
@@ -541,6 +656,13 @@ impl BootstrapNode {
 
         self.mining_active.store(true, Ordering::SeqCst);
 
+        let round_num = self.mining_round.fetch_add(1, Ordering::SeqCst) + 1;
+        *self.mining_round_start.lock() = Some(Instant::now());
+        self.logger.log(NetworkEvent::MiningRoundStarted {
+            round_number: round_num,
+            timestamp: chrono::Utc::now().timestamp() as u64,
+        });
+
         let msg = P2PMessage::MiningStart {
             template: template.clone(),
         };
@@ -575,6 +697,49 @@ impl BootstrapNode {
         } else {
             println!("Sync request sent to all peers");
         }
+    }
+
+    fn show_network_stats(&self) {
+        let events = self.logger.get_events();
+        let stats = NetworkStatistics::from_events(&events);
+        stats.display();
+    }
+
+    fn export_logs(&self) {
+        println!("\nExport logs:");
+        println!("  1. JSON format");
+        println!("  2. CSV format");
+        print!("Select format: ");
+        io::stdout().flush().ok();
+
+        let stdin = io::stdin();
+        let mut input = String::new();
+        if stdin.read_line(&mut input).is_err() {
+            eprintln!("Failed to read input");
+            return;
+        }
+
+        match input.trim() {
+            "1" => {
+                let filename = format!("bootstrap_logs_{}.json", chrono::Utc::now().timestamp());
+                if let Err(e) = self.logger.export_json(&filename) {
+                    eprintln!("Failed to export JSON: {}", e);
+                }
+            }
+            "2" => {
+                let filename = format!("bootstrap_logs_{}.csv", chrono::Utc::now().timestamp());
+                if let Err(e) = self.logger.export_csv(&filename) {
+                    eprintln!("Failed to export CSV: {}", e);
+                }
+            }
+            _ => println!("Invalid selection"),
+        }
+    }
+
+    fn clear_logs(&self) {
+        let count = self.logger.count();
+        self.logger.clear();
+        println!("Cleared {} logged events", count);
     }
 }
 
