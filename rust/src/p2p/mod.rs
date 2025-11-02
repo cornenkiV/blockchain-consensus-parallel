@@ -2,6 +2,7 @@
 pub mod bootstrap;
 pub mod error;
 pub mod mempool;
+pub mod mining;
 pub mod network;
 pub mod node;
 pub mod protocol;

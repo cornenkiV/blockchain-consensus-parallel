@@ -2,13 +2,13 @@ use crate::blockchain::{Block, Blockchain};
 use crate::p2p::error::NetworkError;
 use crate::p2p::mempool::TransactionPool;
 use crate::p2p::network::StarNetworkClient;
-use crate::p2p::protocol::{P2PMessage, PeerInfo};
+use crate::p2p::protocol::{BlockTemplate, P2PMessage, PeerInfo};
 use crate::pos::Transaction;
 use parking_lot::Mutex;
 use std::io::{self, Write};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::thread;
+use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
 pub struct RegularNode {
@@ -17,6 +17,9 @@ pub struct RegularNode {
     blockchain: Arc<Mutex<Blockchain>>,
     peers: Arc<Mutex<Vec<PeerInfo>>>,
     mempool: Arc<Mutex<TransactionPool>>,
+    mining_active: Arc<AtomicBool>,
+    mining_stop_flag: Arc<AtomicBool>,
+    mining_thread: Arc<Mutex<Option<JoinHandle<()>>>>,
     running: Arc<AtomicBool>,
 }
 
@@ -32,6 +35,9 @@ impl RegularNode {
             blockchain: Arc::new(Mutex::new(blockchain)),
             peers: Arc::new(Mutex::new(Vec::new())),
             mempool: Arc::new(Mutex::new(mempool)),
+            mining_active: Arc::new(AtomicBool::new(false)),
+            mining_stop_flag: Arc::new(AtomicBool::new(false)),
+            mining_thread: Arc::new(Mutex::new(None)),
             running: Arc::new(AtomicBool::new(true)),
         })
     }
@@ -61,6 +67,9 @@ impl RegularNode {
         let blockchain = self.blockchain.clone();
         let peers = self.peers.clone();
         let mempool = self.mempool.clone();
+        let mining_active = self.mining_active.clone();
+        let mining_stop_flag = self.mining_stop_flag.clone();
+        let mining_thread = self.mining_thread.clone();
         let running = self.running.clone();
         let node_id = self.node_id.clone();
 
@@ -74,6 +83,10 @@ impl RegularNode {
                             &blockchain,
                             &peers,
                             &mempool,
+                            &client,
+                            &mining_active,
+                            &mining_stop_flag,
+                            &mining_thread,
                             &running,
                         );
                     }
@@ -148,6 +161,10 @@ impl RegularNode {
         blockchain: &Arc<Mutex<Blockchain>>,
         peers: &Arc<Mutex<Vec<PeerInfo>>>,
         mempool: &Arc<Mutex<TransactionPool>>,
+        client: &Arc<StarNetworkClient>,
+        mining_active: &Arc<AtomicBool>,
+        mining_stop_flag: &Arc<AtomicBool>,
+        mining_thread: &Arc<Mutex<Option<JoinHandle<()>>>>,
         running: &Arc<AtomicBool>,
     ) {
         match message {
@@ -164,16 +181,31 @@ impl RegularNode {
             }
 
             P2PMessage::NewBlock { block, miner_id } => {
-                let mut blockchain_lock = blockchain.lock();
+                let is_valid = {
+                    let blockchain_lock = blockchain.lock();
+                    blockchain_lock.validate_block(&block)
+                };
 
-                if blockchain_lock.validate_block(&block) {
-                    blockchain_lock.add_block(block.clone());
-                    println!("New block added (mined by {})", miner_id);
-                    println!(
-                        "  Block #{}: {}...",
-                        blockchain_lock.chain.len() - 1,
-                        &block.hash[..16]
-                    );
+                if is_valid {
+                    //adding to blockchain
+                    {
+                        let mut blockchain_lock = blockchain.lock();
+                        blockchain_lock.add_block(block.clone());
+                        println!("\nNew block added to chain (mined by {})", miner_id);
+                        println!(
+                            "  Block #{}: {}...",
+                            blockchain_lock.chain.len() - 1,
+                            &block.hash[..16]
+                        );
+                    }
+
+                    mining_stop_flag.store(true, Ordering::SeqCst);
+                    mining_active.store(false, Ordering::SeqCst);
+
+                    {
+                        let mut mempool_lock = mempool.lock();
+                        mempool_lock.clear();
+                    }
                 } else {
                     eprintln!("Invalid block received, rejected");
                 }
@@ -183,12 +215,21 @@ impl RegularNode {
                 //heartbeat response
             }
 
-            P2PMessage::MiningStart { .. } => {
-                // TODO
+            P2PMessage::MiningStart { template } => {
+                Self::handle_mining_start(
+                    node_id,
+                    template,
+                    client,
+                    mining_active,
+                    mining_stop_flag,
+                    mining_thread,
+                );
             }
 
             P2PMessage::MiningStop => {
-                // TODO
+                println!("Mining stop signal received");
+                mining_stop_flag.store(true, Ordering::SeqCst);
+                mining_active.store(false, Ordering::SeqCst);
             }
 
             P2PMessage::NewTransaction {
@@ -235,6 +276,7 @@ impl RegularNode {
                 "sync" => self.force_sync(),
                 "add-tx" => self.add_transaction_interactive(),
                 "mempool" => self.show_mempool(),
+                "mining-status" => self.show_mining_status(),
                 "help" => self.show_help(),
                 "exit" | "quit" => {
                     println!("Shutting down node...");
@@ -324,14 +366,15 @@ impl RegularNode {
 
     fn show_help(&self) {
         println!("\n=== Available Commands ===");
-        println!("  blockchain  - Show blockchain");
-        println!("  peers       - Show connected peers");
-        println!("  status      - Show node status");
-        println!("  sync        - Blockchain sync");
-        println!("  add-tx      - Add new transaction");
-        println!("  mempool     - Show pending transactions");
-        println!("  help        - Show all commands");
-        println!("  exit        - Shutdown node");
+        println!("  blockchain     - Show blockchain");
+        println!("  peers          - Show connected peers");
+        println!("  status         - Show node status");
+        println!("  sync           - Blockchain sync");
+        println!("  add-tx         - Add new transaction");
+        println!("  mempool        - Show pending transactions");
+        println!("  mining-status  - Show mining status");
+        println!("  help           - Show all commands");
+        println!("  exit           - Shutdown node");
         println!();
     }
 
@@ -393,6 +436,81 @@ impl RegularNode {
                 println!("{}. {} -> {}: {} coins", i + 1, tx.from, tx.to, tx.amount);
             }
         }
+        println!();
+    }
+
+    fn handle_mining_start(
+        node_id: &str,
+        template: BlockTemplate,
+        client: &Arc<StarNetworkClient>,
+        mining_active: &Arc<AtomicBool>,
+        mining_stop_flag: &Arc<AtomicBool>,
+        mining_thread: &Arc<Mutex<Option<JoinHandle<()>>>>,
+    ) {
+        println!("\nMining start signal received");
+        println!(
+            "  Block #{}, Difficulty: {}",
+            template.block_number, template.difficulty
+        );
+
+        mining_stop_flag.store(true, Ordering::SeqCst);
+
+        if let Some(handle) = mining_thread.lock().take() {
+            handle.join().ok();
+        }
+
+        mining_stop_flag.store(false, Ordering::SeqCst);
+        mining_active.store(true, Ordering::SeqCst);
+
+        let node_id = node_id.to_string();
+        let client = client.clone();
+        let stop_flag = Arc::clone(mining_stop_flag);
+        let mining_active_clone = Arc::clone(mining_active);
+
+        let handle = thread::spawn(move || {
+            println!("Mining started...");
+            let start_time = std::time::Instant::now();
+
+            let result = crate::p2p::mining::mine_block_parallel(
+                template,
+                4, //num_workers
+                stop_flag.clone(),
+            );
+
+            if let Some(block) = result {
+                let elapsed = start_time.elapsed().as_secs_f64();
+                println!("\nBLOCK FOUND!");
+                println!("  Nonce: {}", block.nonce);
+                println!("  Hash: {}...", &block.hash[..16]);
+                println!("  Time: {:.2}s", elapsed);
+
+                let msg = P2PMessage::NewBlock {
+                    block,
+                    miner_id: node_id,
+                };
+
+                client.send(&msg).ok();
+            } else {
+                println!("Mining stopped (block found by another node)");
+            }
+
+            mining_active_clone.store(false, Ordering::SeqCst);
+        });
+
+        *mining_thread.lock() = Some(handle);
+    }
+
+    fn show_mining_status(&self) {
+        println!("\n=== Mining Status ===");
+
+        if self.mining_active.load(Ordering::SeqCst) {
+            println!("Status: MINING");
+        } else {
+            println!("Status: IDLE");
+        }
+
+        let blockchain = self.blockchain.lock();
+        println!("Current chain length: {}", blockchain.chain.len());
         println!();
     }
 }

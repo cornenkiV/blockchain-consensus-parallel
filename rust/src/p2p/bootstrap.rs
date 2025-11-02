@@ -19,6 +19,7 @@ pub struct BootstrapNode {
     blockchain: Arc<Mutex<Blockchain>>,
     peers: Arc<Mutex<HashMap<String, PeerInfo>>>,
     mempool: Arc<Mutex<TransactionPool>>,
+    mining_active: Arc<AtomicBool>,
     running: Arc<AtomicBool>,
     start_time: Instant,
 }
@@ -34,6 +35,7 @@ impl BootstrapNode {
             blockchain: Arc::new(Mutex::new(blockchain)),
             peers: Arc::new(Mutex::new(HashMap::new())),
             mempool: Arc::new(Mutex::new(mempool)),
+            mining_active: Arc::new(AtomicBool::new(false)),
             running: Arc::new(AtomicBool::new(true)),
             start_time: Instant::now(),
         })
@@ -53,6 +55,8 @@ impl BootstrapNode {
         println!("  blockchain   - Show blockchain summary");
         println!("  mempool      - Show pending transactions");
         println!("  clear-mempool- Clear all pending transactions");
+        println!("  start-mining - Initiate mining");
+        println!("  stop-mining  - Stop current mining");
         println!("  stats        - Show node statistics");
         println!("  quit         - Shutdown bootstrap node");
         println!();
@@ -81,16 +85,15 @@ impl BootstrapNode {
                 "blockchain" => self.show_blockchain(),
                 "mempool" => self.show_mempool(),
                 "clear-mempool" => self.clear_mempool(),
+                "start-mining" => self.initiate_mining_round(),
+                "stop-mining" => self.stop_mining(),
                 "stats" => self.show_stats(),
                 "quit" => {
                     println!("Shutting down bootstrap node...");
                     break;
                 }
                 "" => continue,
-                cmd => println!(
-                    "Unknown command: {}. Type 'peers', 'blockchain', 'stats', 'mempool', 'clear-mempool', or 'exit'",
-                    cmd
-                ),
+                cmd => println!("Unknown command: {}", cmd),
             }
         }
 
@@ -271,6 +274,51 @@ impl BootstrapNode {
                 println!("Pong from {}", node_id);
             }
 
+            P2PMessage::NewBlock { block, miner_id } => {
+                println!("\nNew block found by {}!", miner_id);
+
+                let is_valid = {
+                    let blockchain_lock = blockchain.lock();
+                    blockchain_lock.validate_block(&block)
+                };
+
+                if !is_valid {
+                    eprintln!("Invalid block, rejected");
+                    return;
+                }
+
+                //adding to blockchain
+                {
+                    let mut blockchain_lock = blockchain.lock();
+                    blockchain_lock.add_block(block.clone());
+                    println!(
+                        "Block #{} added to blockchain",
+                        blockchain_lock.chain.len() - 1
+                    );
+                    println!("  Hash: {}...", &block.hash[..16]);
+                    println!("  Nonce: {}", block.nonce);
+                }
+
+                //broadcast block to peers
+                let msg = P2PMessage::NewBlock {
+                    block: block.clone(),
+                    miner_id: miner_id.clone(),
+                };
+                network.broadcast(&msg).ok();
+
+                network.broadcast(&P2PMessage::MiningStop).ok();
+
+                //delete mined tx from mempool
+                {
+                    let mut mempool_lock = mempool.lock();
+                    let cleared = mempool_lock.size();
+                    mempool_lock.clear();
+                    println!("Cleared {} transactions from mempool", cleared);
+                }
+
+                println!("Mining complete.\n");
+            }
+
             _ => {
                 eprintln!("Unhandled message type from {}: {:?}", from_node, message);
             }
@@ -430,6 +478,53 @@ impl BootstrapNode {
             blockchain.difficulty,
             blockchain.chain.len(),
         )
+    }
+
+    fn initiate_mining_round(&self) {
+        if self.mining_active.load(Ordering::SeqCst) {
+            println!("Mining already in progress");
+            return;
+        }
+
+        let peers_count = self.peers.lock().len();
+        if peers_count == 0 {
+            println!("No peers connected. Cannot start mining.");
+            return;
+        }
+
+        println!("\nInitiating mining...");
+
+        let template = self.create_block_template();
+
+        println!("Block template created:");
+        println!("  Block number: {}", template.block_number);
+        println!("  Difficulty: {} leading zeros", template.difficulty);
+        println!("  Transactions: {}", template.transactions.len());
+
+        self.mining_active.store(true, Ordering::SeqCst);
+
+        let msg = P2PMessage::MiningStart {
+            template: template.clone(),
+        };
+
+        if let Err(e) = self.network.broadcast(&msg) {
+            eprintln!("Failed to broadcast mining start: {}", e);
+            self.mining_active.store(false, Ordering::SeqCst);
+            return;
+        }
+
+        println!("Mining start broadcast to {} peers", peers_count);
+    }
+
+    fn stop_mining(&self) {
+        if !self.mining_active.load(Ordering::SeqCst) {
+            println!("Mining is not active");
+            return;
+        }
+
+        self.mining_active.store(false, Ordering::SeqCst);
+        self.network.broadcast(&P2PMessage::MiningStop).ok();
+        println!("Mining stopped");
     }
 }
 
