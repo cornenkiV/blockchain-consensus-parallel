@@ -169,7 +169,7 @@ impl NetworkStatistics {
             self.total_blocks_broadcast
         );
 
-        println!("\n⚖️  CONSENSUS STATISTICS:");
+        println!("\nCONSENSUS STATISTICS:");
         println!(
             "  - Chain reorganizations:      {}",
             self.total_reorganizations

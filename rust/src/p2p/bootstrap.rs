@@ -130,17 +130,29 @@ impl BootstrapNode {
         thread::spawn(move || {
             while running.load(Ordering::Relaxed) {
                 match network.accept_connection() {
-                    Ok((node_id, stream)) => {
+                    Ok((node_id, peer_address, stream)) => {
+                        let timestamp = chrono::Utc::now().timestamp() as u64;
+
+                        if peer_address.starts_with("heartbeat:") {
+                            {
+                                let mut peers_lock = peers.lock();
+                                if let Some(peer) = peers_lock.get_mut(&node_id) {
+                                    peer.last_seen = timestamp;
+                                }
+                            }
+                            drop(stream);
+                            continue;
+                        }
+
                         network.register_peer(node_id.clone(), stream.try_clone().unwrap());
 
-                        let timestamp = chrono::Utc::now().timestamp() as u64;
                         {
                             let mut peers_lock = peers.lock();
                             peers_lock.insert(
                                 node_id.clone(),
                                 PeerInfo {
                                     node_id: node_id.clone(),
-                                    address: "test".to_string(),
+                                    address: peer_address.clone(),
                                     last_seen: timestamp,
                                     blocks_mined: 0,
                                 },
@@ -149,39 +161,71 @@ impl BootstrapNode {
 
                         logger.log(NetworkEvent::PeerConnected {
                             node_id: node_id.clone(),
-                            address: "test".to_string(),
+                            address: peer_address.clone(),
                             timestamp,
                         });
 
-                        let peer_list = Self::get_peer_list_static(&peers);
-                        let peer_list_msg = P2PMessage::PeerList {
-                            peers: peer_list
-                                .into_iter()
-                                .filter(|p| p.node_id != node_id)
-                                .collect(),
-                        };
+                        let is_mesh_node = node_id.starts_with("mesh_node_");
 
-                        if let Err(e) = network.send_to(&node_id, &peer_list_msg) {
-                            eprintln!("Failed to send PeerList to {}: {}", node_id, e);
+                        if is_mesh_node {
+                            println!("Mesh node {} - discovery mode", node_id);
+
+                            let peer_list = Self::get_peer_list_static(&peers);
+                            let peer_list_msg = P2PMessage::PeerList {
+                                peers: peer_list
+                                    .into_iter()
+                                    .filter(|p| {
+                                        p.node_id != node_id && p.node_id.starts_with("mesh_node_")
+                                    })
+                                    .collect(),
+                            };
+
+                            if let Err(e) = network.send_to(&node_id, &peer_list_msg) {
+                                eprintln!(
+                                    "Failed to send PeerList to mesh node {}: {}",
+                                    node_id, e
+                                );
+                            }
+
+                            Self::handle_mesh_node_discovery(
+                                node_id,
+                                stream,
+                                network.clone(),
+                                blockchain.clone(),
+                                peers.clone(),
+                                logger.clone(),
+                            );
+                        } else {
+                            let peer_list = Self::get_peer_list_static(&peers);
+                            let peer_list_msg = P2PMessage::PeerList {
+                                peers: peer_list
+                                    .into_iter()
+                                    .filter(|p| p.node_id != node_id)
+                                    .collect(),
+                            };
+
+                            if let Err(e) = network.send_to(&node_id, &peer_list_msg) {
+                                eprintln!("Failed to send PeerList to {}: {}", node_id, e);
+                            }
+
+                            let all_peers = Self::get_peer_list_static(&peers);
+                            let broadcast_msg = P2PMessage::PeerList { peers: all_peers };
+                            network.broadcast(&broadcast_msg).ok();
+
+                            Self::start_peer_message_loop(
+                                node_id,
+                                stream,
+                                network.clone(),
+                                blockchain.clone(),
+                                peers.clone(),
+                                mempool.clone(),
+                                mining_active.clone(),
+                                running.clone(),
+                                logger.clone(),
+                                mining_round.clone(),
+                                mining_round_start.clone(),
+                            );
                         }
-
-                        let all_peers = Self::get_peer_list_static(&peers);
-                        let broadcast_msg = P2PMessage::PeerList { peers: all_peers };
-                        network.broadcast(&broadcast_msg).ok();
-
-                        Self::start_peer_message_loop(
-                            node_id,
-                            stream,
-                            network.clone(),
-                            blockchain.clone(),
-                            peers.clone(),
-                            mempool.clone(),
-                            mining_active.clone(),
-                            running.clone(),
-                            logger.clone(),
-                            mining_round.clone(),
-                            mining_round_start.clone(),
-                        );
                     }
                     Err(e) => {
                         if running.load(Ordering::Relaxed) {
@@ -191,6 +235,65 @@ impl BootstrapNode {
                     }
                 }
             }
+        });
+    }
+
+    fn handle_mesh_node_discovery(
+        node_id: String,
+        mut stream: TcpStream,
+        network: Arc<StarNetworkServer>,
+        blockchain: Arc<Mutex<Blockchain>>,
+        peers: Arc<Mutex<HashMap<String, PeerInfo>>>,
+        logger: NetworkLogger,
+    ) {
+        thread::spawn(move || {
+            match P2PMessage::receive(&mut stream) {
+                Ok(P2PMessage::RequestBlockchain { requester_id }) => {
+                    println!("Mesh node {} requested blockchain", requester_id);
+
+                    logger.log(NetworkEvent::ChainSyncRequested {
+                        requesting_node: requester_id.clone(),
+                        timestamp: chrono::Utc::now().timestamp() as u64,
+                    });
+
+                    let chain = {
+                        let blockchain_lock = blockchain.lock();
+                        blockchain_lock.chain.clone()
+                    };
+
+                    let chain_len = chain.len();
+                    let sync_msg = P2PMessage::BlockchainSync { chain };
+
+                    if let Err(e) = sync_msg.send(&mut stream) {
+                        eprintln!("Failed to send blockchain to {}: {}", requester_id, e);
+                    } else {
+                        println!("Sent blockchain to {} ({} blocks)", requester_id, chain_len);
+                    }
+                }
+                Ok(P2PMessage::Heartbeat {
+                    node_id: hb_node_id,
+                    timestamp,
+                }) => {
+                    let mut peers_lock = peers.lock();
+                    if let Some(peer) = peers_lock.get_mut(&hb_node_id) {
+                        peer.last_seen = timestamp;
+                    }
+                }
+                Ok(msg) => {
+                    println!("Unexpected message from mesh node {}: {:?}", node_id, msg);
+                }
+                Err(e) => {
+                    if !e.to_string().contains("Connection reset")
+                        && !e.to_string().contains("10054")
+                    {
+                        eprintln!("Error receiving from mesh node {}: {}", node_id, e);
+                    }
+                }
+            }
+
+            drop(stream);
+
+            network.remove_peer(&node_id);
         });
     }
 
@@ -472,6 +575,19 @@ impl BootstrapNode {
                 println!("Mining complete.\n");
             }
 
+            P2PMessage::Disconnect { node_id } => {
+                println!("Node {} disconnecting gracefully", node_id);
+
+                {
+                    let mut peers_lock = peers.lock();
+                    peers_lock.remove(&node_id);
+                }
+
+                network.remove_peer(&node_id);
+
+                println!("Removed {} from peers list", node_id);
+            }
+
             _ => {
                 eprintln!("Unhandled message type from {}: {:?}", from_node, message);
             }
@@ -484,6 +600,8 @@ impl BootstrapNode {
         let running = self.running.clone();
 
         thread::spawn(move || {
+            println!("Heartbeat monitor started (TO after 60s)");
+
             while running.load(Ordering::Relaxed) {
                 thread::sleep(Duration::from_secs(30));
 
@@ -502,6 +620,8 @@ impl BootstrapNode {
                     peers_lock.remove(&node_id);
                 }
             }
+
+            println!("Heartbeat monitor stopped");
         });
     }
 
