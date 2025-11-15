@@ -269,10 +269,18 @@ impl MeshNode {
 
     pub fn start(&mut self) -> Result<(), NetworkError> {
         let running = self.running.clone();
+        let node_id = self.node_id.clone();
+        let bootstrap_node = self.bootstrap_address.clone();
         ctrlc::set_handler(move || {
             println!("\n\nShutting down...");
             println!("(Press Enter to complete shutdown)");
             running.store(false, Ordering::SeqCst);
+            let disconnect_msg = P2PMessage::Disconnect {
+                node_id: node_id.clone(),
+            };
+            if let Ok(mut stream) = TcpStream::connect(&bootstrap_node) {
+                let _ = disconnect_msg.send(&mut stream);
+            }
         })
         .expect("Error");
 
@@ -681,6 +689,10 @@ impl MeshNode {
             }
 
             P2PMessage::RequestBlockchain { requester_id } => {
+                if requester_id == node_id {
+                    return;
+                }
+
                 println!("Peer {} requesting blockchain", requester_id);
 
                 let chain = blockchain.lock().chain.clone();
@@ -702,7 +714,12 @@ impl MeshNode {
             _ => {}
         }
 
-        network.gossip_broadcast(&message, Some(from_peer)).ok();
+        match &message {
+            P2PMessage::RequestBlockchain { .. } | P2PMessage::BlockchainSync { .. } => {}
+            _ => {
+                network.gossip_broadcast(&message, Some(from_peer)).ok();
+            }
+        }
     }
 
     fn handle_mining_start(
@@ -838,6 +855,14 @@ impl MeshNode {
                 "help" => self.show_help(),
                 "exit" | "quit" => {
                     println!("Shutting down node...");
+
+                    let disconnect_msg = P2PMessage::Disconnect {
+                        node_id: self.node_id.clone(),
+                    };
+                    if let Ok(mut stream) = TcpStream::connect(&self.bootstrap_address) {
+                        let _ = disconnect_msg.send(&mut stream);
+                    }
+
                     println!("Closing connections...");
                     break;
                 }

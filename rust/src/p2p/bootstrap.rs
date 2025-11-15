@@ -144,6 +144,18 @@ impl BootstrapNode {
                             continue;
                         }
 
+                        if peer_address.starts_with("disconnect:") {
+                            println!("Node {} disconnecting gracefully", node_id);
+                            {
+                                let mut peers_lock = peers.lock();
+                                peers_lock.remove(&node_id);
+                            }
+                            network.remove_peer(&node_id);
+                            println!("Removed {} from peers list", node_id);
+                            drop(stream);
+                            continue;
+                        }
+
                         network.register_peer(node_id.clone(), stream.try_clone().unwrap());
 
                         {
@@ -278,6 +290,18 @@ impl BootstrapNode {
                     if let Some(peer) = peers_lock.get_mut(&hb_node_id) {
                         peer.last_seen = timestamp;
                     }
+                }
+                Ok(P2PMessage::Disconnect {
+                    node_id: disconnect_node_id,
+                }) => {
+                    println!("Node {} disconnecting gracefully", disconnect_node_id);
+
+                    let mut peers_lock = peers.lock();
+                    peers_lock.remove(&disconnect_node_id);
+
+                    network.remove_peer(&disconnect_node_id);
+
+                    println!("Removed {} from peers list", disconnect_node_id);
                 }
                 Ok(msg) => {
                     println!("Unexpected message from mesh node {}: {:?}", node_id, msg);

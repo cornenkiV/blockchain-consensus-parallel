@@ -77,6 +77,11 @@ impl StarNetworkServer {
                 format!("heartbeat:{}", node_id),
                 return_stream,
             )),
+            Ok(P2PMessage::Disconnect { node_id }) => Ok((
+                node_id.clone(),
+                format!("disconnect:{}", node_id),
+                return_stream,
+            )),
             Ok(_) => Err(NetworkError::InvalidMessage(
                 "First message must be Join or Heartbeat".to_string(),
             )),
