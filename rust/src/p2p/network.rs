@@ -229,9 +229,14 @@ impl StarNetworkClient {
 
 // MESH
 
+pub(crate) struct PeerConnection {
+    pub(crate) stream: TcpStream,
+    pub(crate) connected_at: std::time::Instant,
+}
+
 pub struct MeshNetwork {
     node_id: String,
-    peers: Arc<Mutex<HashMap<String, TcpStream>>>,
+    pub(crate) peers: Arc<Mutex<HashMap<String, PeerConnection>>>,
     message_tracker: MessageTracker,
     max_peers: usize,
 }
@@ -247,12 +252,6 @@ impl MeshNetwork {
     }
 
     pub fn connect_to_peer(&self, peer_address: &str, peer_id: String) -> Result<(), NetworkError> {
-        if self.peers.lock().len() >= self.max_peers {
-            return Err(NetworkError::ConnectionFailed(
-                "Max peers reached".to_string(),
-            ));
-        }
-
         if self.peers.lock().contains_key(&peer_id) {
             return Ok(());
         }
@@ -273,28 +272,84 @@ impl MeshNetwork {
         join.send(&mut stream)
             .map_err(|e| NetworkError::SendFailed(format!("Failed to send Join: {}", e)))?;
 
-        self.peers.lock().insert(peer_id.clone(), stream);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(2)))
+            .map_err(|e| NetworkError::ConnectionFailed(format!("Failed to set timeout: {}", e)))?;
+
+        match P2PMessage::receive(&mut stream) {
+            Ok(P2PMessage::Rejected { reason }) => {
+                println!("Connection rejected: {}", reason);
+                return Err(NetworkError::ConnectionFailed(format!(
+                    "Rejected by peer: {}",
+                    reason
+                )));
+            }
+            Err(e)
+                if e.to_string().contains("timed out")
+                    || e.to_string().contains("WouldBlock")
+                    || e.to_string().contains("10060") =>
+            {
+                println!("Connection accepted");
+            }
+            Err(e)
+                if e.to_string().contains("UnexpectedEof")
+                    || e.to_string().contains("failed to fill whole buffer") =>
+            {
+                println!("Connection closed by peer (rejected)");
+                return Err(NetworkError::ConnectionFailed(
+                    "Connection rejected".to_string(),
+                ));
+            }
+            Err(e) => {
+                println!("Error reading after Join: {}", e);
+            }
+            Ok(msg) => {
+                println!(
+                    "Received message after Join: {:?} - connection accepted",
+                    msg
+                );
+            }
+        }
+
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(1)))
+            .map_err(|e| NetworkError::ConnectionFailed(format!("Failed to set timeout: {}", e)))?;
+
+        self.peers.lock().insert(
+            peer_id.clone(),
+            PeerConnection {
+                stream,
+                connected_at: std::time::Instant::now(),
+            },
+        );
         println!("Connected to peer: {}", peer_id);
 
         Ok(())
     }
 
-    pub fn accept_peer(&self, peer_id: String, stream: TcpStream) {
+    pub fn accept_peer(&self, peer_id: String, stream: TcpStream) -> bool {
         let mut peers = self.peers.lock();
 
         if peers.contains_key(&peer_id) {
             if self.node_id < peer_id {
                 drop(stream);
                 println!("Duplicate connection to {} - keeping outgoing", peer_id);
-                return;
+                return false;
             } else {
                 peers.remove(&peer_id);
                 println!("Duplicate connection to {} - keeping incoming", peer_id);
             }
         }
 
-        peers.insert(peer_id.clone(), stream);
+        peers.insert(
+            peer_id.clone(),
+            PeerConnection {
+                stream,
+                connected_at: std::time::Instant::now(),
+            },
+        );
         println!("Peer connected: {}", peer_id);
+        true
     }
 
     pub fn remove_peer(&self, peer_id: &str) {
@@ -318,14 +373,14 @@ impl MeshNetwork {
         let mut peers = self.peers.lock();
         let mut failed_peers = Vec::new();
 
-        for (peer_id, stream) in peers.iter_mut() {
+        for (peer_id, conn) in peers.iter_mut() {
             if let Some(exclude) = exclude_peer {
                 if peer_id == exclude {
                     continue;
                 }
             }
 
-            if let Err(e) = message.send(stream) {
+            if let Err(e) = message.send(&mut conn.stream) {
                 eprintln!("Failed to gossip to {}: {}", peer_id, e);
                 failed_peers.push(peer_id.clone());
             }
@@ -342,6 +397,10 @@ impl MeshNetwork {
         self.peers.lock().len()
     }
 
+    pub fn peer_count_limit(&self) -> usize {
+        self.max_peers
+    }
+
     pub fn cleanup_tracker(&self) {
         self.message_tracker.cleanup();
     }
@@ -354,8 +413,8 @@ impl NetworkLayer for MeshNetwork {
 
     fn send_to(&self, node_id: &str, message: &P2PMessage) -> Result<(), NetworkError> {
         let mut peers = self.peers.lock();
-        if let Some(stream) = peers.get_mut(node_id) {
-            message.send(stream).map_err(|e| {
+        if let Some(conn) = peers.get_mut(node_id) {
+            message.send(&mut conn.stream).map_err(|e| {
                 NetworkError::SendFailed(format!("Failed to send to {}: {}", node_id, e))
             })?;
         } else {

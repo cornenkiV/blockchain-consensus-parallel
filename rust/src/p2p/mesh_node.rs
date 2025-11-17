@@ -174,37 +174,19 @@ impl MeshNode {
             return Ok(());
         }
 
-        let mut stream = TcpStream::connect(peer_address).map_err(|e| {
-            NetworkError::ConnectionFailed(format!("Failed to connect to {}: {}", peer_address, e))
-        })?;
-
-        let join = P2PMessage::Join {
-            node_id: self.node_id.clone(),
-            address: format!(
-                "127.0.0.1:{}",
-                self.listener.as_ref().unwrap().local_addr().unwrap().port()
-            ),
-            timestamp: chrono::Utc::now().timestamp() as u64,
-        };
-        join.send(&mut stream)
-            .map_err(|e| NetworkError::SendFailed(format!("Failed to send Join: {}", e)))?;
-
-        let mut stream_for_network = stream.try_clone().map_err(|e| {
-            NetworkError::ConnectionFailed(format!("Failed to clone stream: {}", e))
-        })?;
-
-        stream
-            .set_read_timeout(Some(Duration::from_secs(1)))
-            .map_err(|e| NetworkError::ConnectionFailed(format!("Failed to set timeout: {}", e)))?;
-
-        stream_for_network
-            .set_read_timeout(Some(Duration::from_secs(1)))
-            .map_err(|e| {
-                NetworkError::ConnectionFailed(format!("Failed to set timeout on clone: {}", e))
-            })?;
-
+        let full_address = peer_address.to_string();
         self.network
-            .accept_peer(peer_id.to_string(), stream_for_network);
+            .connect_to_peer(&full_address, peer_id.to_string())?;
+
+        let stream = {
+            let peers = self.network.peers.lock();
+            let peer_conn = peers.get(peer_id).ok_or_else(|| {
+                NetworkError::ConnectionFailed("Peer not found after connect".to_string())
+            })?;
+            peer_conn.stream.try_clone().map_err(|e| {
+                NetworkError::ConnectionFailed(format!("Failed to clone stream: {}", e))
+            })?
+        };
 
         Self::start_peer_message_loop_static(
             peer_id.to_string(),
@@ -231,14 +213,32 @@ impl MeshNode {
         *self.peers.lock() = peers.clone();
 
         let mut rng = rand::thread_rng();
-        let num_to_connect = std::cmp::min(3, peers.len());
-        let peers_to_connect: Vec<_> = peers.choose_multiple(&mut rng, num_to_connect).collect();
+        let mut shuffled_peers = peers.clone();
+        shuffled_peers.shuffle(&mut rng);
 
         let mut successfully_connected = Vec::new();
+        let max_peers = self.network.peer_count_limit();
 
-        for peer in peers_to_connect {
+        let target_outgoing = std::cmp::max(1, max_peers / 2);
+
+        println!(
+            "Connection strategy: target {}/{} outgoing (leaves room for {} incoming)",
+            target_outgoing,
+            max_peers,
+            max_peers - target_outgoing
+        );
+
+        for peer in shuffled_peers {
             if peer.node_id == self.node_id {
                 continue;
+            }
+
+            if self.network.peer_count() >= target_outgoing {
+                println!(
+                    "Reached target outgoing connections ({}), stopping",
+                    target_outgoing
+                );
+                break;
             }
 
             println!("Attempting to connect to peer: {}", peer.node_id);
@@ -325,6 +325,15 @@ impl MeshNode {
                             }) => {
                                 println!("Peer joining: {}", peer_id);
 
+                                if network.peer_count() >= network.peer_count_limit() {
+                                    println!("Rejecting {} (at max capacity)", peer_id);
+                                    let reject_msg = P2PMessage::Rejected {
+                                        reason: "Max peers reached".to_string(),
+                                    };
+                                    let _ = reject_msg.send(&mut stream);
+                                    continue;
+                                }
+
                                 let mut stream_clone = stream.try_clone().unwrap();
 
                                 stream.set_read_timeout(Some(Duration::from_secs(1))).ok();
@@ -332,7 +341,10 @@ impl MeshNode {
                                     .set_read_timeout(Some(Duration::from_secs(1)))
                                     .ok();
 
-                                network.accept_peer(peer_id.clone(), stream_clone);
+                                if !network.accept_peer(peer_id.clone(), stream_clone) {
+                                    //duplicate
+                                    continue;
+                                }
 
                                 Self::start_peer_message_loop_static(
                                     peer_id.clone(),
