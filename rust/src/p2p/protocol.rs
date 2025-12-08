@@ -40,6 +40,12 @@ pub enum P2PMessage {
 
     /// response to heartbeat
     Pong { node_id: String },
+
+    /// node is disconnecting gracefully
+    Disconnect { node_id: String },
+
+    /// connection rejected
+    Rejected { reason: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
