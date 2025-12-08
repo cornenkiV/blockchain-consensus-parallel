@@ -217,15 +217,13 @@ impl MeshNode {
         shuffled_peers.shuffle(&mut rng);
 
         let mut successfully_connected = Vec::new();
-        let max_peers = self.network.peer_count_limit();
 
-        let target_outgoing = std::cmp::max(1, max_peers / 2);
+        // ln(n) is enough, approx. 20-50 nodes, 3 is enough
+        let target_outgoing = 3;
 
         println!(
-            "Connection strategy: target {}/{} outgoing (leaves room for {} incoming)",
-            target_outgoing,
-            max_peers,
-            max_peers - target_outgoing
+            "Connecting to {} peers to ensure graph connectivity",
+            target_outgoing
         );
 
         for peer in shuffled_peers {
@@ -233,11 +231,8 @@ impl MeshNode {
                 continue;
             }
 
-            if self.network.peer_count() >= target_outgoing {
-                println!(
-                    "Reached target outgoing connections ({}), stopping",
-                    target_outgoing
-                );
+            if successfully_connected.len() >= target_outgoing {
+                println!("Reached target connections ({}), stopping", target_outgoing);
                 break;
             }
 
@@ -255,6 +250,12 @@ impl MeshNode {
                 }
             }
         }
+
+        println!(
+            "Successfully connected to {} out of {} target peers",
+            successfully_connected.len(),
+            target_outgoing
+        );
 
         if let Some(peer_id) = successfully_connected.first() {
             println!("Requesting blockchain from mesh peer: {}", peer_id);

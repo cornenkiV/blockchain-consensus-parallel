@@ -8,7 +8,7 @@ use std::error::Error;
 use std::fs;
 
 const OUTPUT_DIR_STRONG: &str = "../output";
-const OUTPUT_DIR_WEAK: &str = "../weak_scaling/output";
+const OUTPUT_DIR_WEAK: &str = "../weak_scaling_blocks/output";
 
 const STRONG_SCALING_DIFFICULTY: usize = 5;
 const SEQUENTIAL_PORTION: f64 = 0.02;

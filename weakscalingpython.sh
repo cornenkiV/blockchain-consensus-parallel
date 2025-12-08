@@ -1,29 +1,22 @@
 #!/bin/bash
 
-BLOCKS=20
+BASE_BLOCKS=5
 TXS=10
 RUNS=30
+DIFFICULTY=4  # Fiksni difficulty
 
-WORKERS=(2 8)
+WORKERS=(2 4 8 12)
 
-OUTPUT_DIR="weak_scaling/output"
+OUTPUT_DIR="weak_scaling_blocks/output"
 mkdir -p "$OUTPUT_DIR"
-
 
 for W in "${WORKERS[@]}"
 do
-  DIFFICULTY=0
-  case $W in
-    2)  DIFFICULTY=4 ;;
-    8)  DIFFICULTY=5 ;;
-  esac
+  # Povećavamo broj blokova proporcionalno broju workera
+  BLOCKS=$((BASE_BLOCKS * W))
 
-  if [ "$DIFFICULTY" -eq 0 ]; then
-    echo "  error."
-    continue
-  fi
+  echo "  Testiranje sa $W radnika, $BLOCKS blokova i tezinom d=$DIFFICULTY..."
 
-  echo "  Testiranje sa $W radnika i tezinom d=$DIFFICULTY..."
   for i in $(seq 1 $RUNS)
   do
     SUFFIX="d${DIFFICULTY}_b${BLOCKS}_t${TXS}_w${W}_run${i}"
