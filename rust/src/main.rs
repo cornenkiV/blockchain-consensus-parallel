@@ -51,6 +51,15 @@ enum Command {
 
         #[arg(long)]
         node_id: Option<String>,
+
+        #[arg(long, default_value = "star")]
+        topology: String,
+
+        #[arg(long, default_value = "5")]
+        max_peers: usize,
+
+        #[arg(long, default_value = "9000")]
+        listen_port: u16,
     },
 }
 
@@ -67,9 +76,22 @@ fn run() -> Result<(), Box<dyn Error>> {
     if let Some(command) = args.command {
         return match command {
             Command::Bootstrap { port } => p2p::run_bootstrap_node(port),
-            Command::Node { connect, node_id } => {
-                p2p::run_regular_node(&connect, node_id).map_err(|e| e.into())
-            }
+            Command::Node {
+                connect,
+                node_id,
+                topology,
+                max_peers,
+                listen_port,
+            } => match topology.as_str() {
+                "star" => p2p::run_regular_node(&connect, node_id).map_err(|e| e.into()),
+                "mesh" => {
+                    p2p::run_mesh_node(&connect, max_peers, listen_port).map_err(|e| e.into())
+                }
+                _ => {
+                    eprintln!("Invalid topology '{}'. Use 'star' or 'mesh'", topology);
+                    process::exit(1);
+                }
+            },
         };
     }
 
